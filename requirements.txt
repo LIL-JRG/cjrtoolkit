@@ -1,0 +1,14 @@
+selenium
+webdriver-manager
+pdf2image
+pytesseract
+tabulate
+pandas
+InquirerPy
+colorama
+termcolor
+asyncio
+cryptography
+aiohttp
+requests
+python-dateutil
