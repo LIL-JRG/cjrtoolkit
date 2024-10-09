@@ -22,32 +22,32 @@ def maximize_console():
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-#def check_for_updates():
-#    try:
-#        with open(os.path.join(current_dir, "system", "ver.txt"), 'r') as r:
-#            current_version = r.read().strip()
-#        
-#        response = requests.get('https://api.github.com/repos/lil-jrg/cjrtoolkit/releases')
-#        latest_version = response.json()[0]['tag_name']
-#        
-#        if latest_version != current_version:
-#            print(f"La nueva versión {latest_version} ya está disponible!")
-#            if inquirer.confirm(
-#                message=f'Te gustaría descargarla ahora?',
-#                default=True
-#            ).execute():
-#                parent_path = os.path.abspath(os.path.join(current_dir, os.pardir))
-#                os.system(f'{parent_path}/updater.bat')
-#                sys.exit(0)
-#    except Exception as e:
-#        print(f"Failed to check for updates: {e}")
+def check_for_updates():
+    try:
+        with open(os.path.join(current_dir, "system", "ver.txt"), 'r') as r:
+            current_version = r.read().strip()
+        
+        response = requests.get('https://api.github.com/repos/lil-jrg/cjrtoolkit/releases')
+        latest_version = response.json()[0]['tag_name']
+        
+        if latest_version != current_version:
+            print(f"La nueva versión {latest_version} ya está disponible!")
+            if inquirer.confirm(
+                message=f'Te gustaría descargarla ahora?',
+                default=True
+            ).execute():
+                parent_path = os.path.abspath(os.path.join(current_dir, os.pardir))
+                os.system(f'{parent_path}/updater.bat')
+                sys.exit(0)
+    except Exception as e:
+        print(f"No se pudo descargar la nueva versión, : {e}")
 
 async def main():
     maximize_console()
     clear_screen()
     print(ASCII_ART)
     
-    #check_for_updates()
+    check_for_updates()
     
     await UserInterface.run()
     clear_screen()
