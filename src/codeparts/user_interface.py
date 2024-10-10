@@ -120,7 +120,7 @@ class UserInterface:
 
     @staticmethod
     async def validate_winda_id():
-        UserInterface.set_console_title('CJR Toolkit v{LASTVERSION} - Winda ID token validator')
+        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Winda ID token validator')
         while True:
             clear_screen()
             terminal_width = os.get_terminal_size().columns
@@ -134,6 +134,7 @@ class UserInterface:
             ).execute_async()
             
             if winda_id.lower() == 'q':
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
                 break
 
             print("\n")
@@ -177,7 +178,7 @@ class UserInterface:
 
     @staticmethod
     async def process_cvs_menu():
-        UserInterface.set_console_title('CJR Toolkit v{LASTVERSION} - - CV Sorter')
+        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - CV Sorter')
         while True:
             clear_screen()
             terminal_width = os.get_terminal_size().columns
@@ -200,6 +201,7 @@ class UserInterface:
             ).execute_async()
 
             if choice == "volver":
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
                 break
 
             print(f"Procesando CVs para {choice}...")
@@ -213,7 +215,7 @@ class UserInterface:
 
     @staticmethod
     async def doc_utilities():
-        UserInterface.set_console_title('CJR Toolkit v{LASTVERSION} - DOC Utilities')
+        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - DOC Utilities')
         clear_screen()
         terminal_width = os.get_terminal_size().columns
         centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
@@ -221,6 +223,7 @@ class UserInterface:
         print(colored_ascii_art)
         print("\n   Funcionalidad DOC Utilities aún no implementada.\n")
         await inquirer.text(message="Presione Enter para volver al menú principal...", qmark="   >").execute_async()
+        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
 
     @staticmethod
     async def run():
