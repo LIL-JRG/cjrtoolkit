@@ -3,6 +3,7 @@ import asyncio
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from InquirerPy.separator import Separator
+from InquirerPy import get_style
 from tabulate import tabulate
 from datetime import datetime
 from codeparts.winda_validator import WindaValidator
@@ -10,6 +11,8 @@ from codeparts.cv_processor import CVProcessor
 from system.config import ASCII_ART, LASTVERSION
 from termcolor import colored
 import colorama
+
+style = get_style({"questionmark": "#ff8400", "answer": "#ffffff", "pointer": "#ff8400"}, style_override=False)
 
 colorama.init()
 
@@ -68,7 +71,7 @@ class UserInterface:
 
     @staticmethod
     async def main_menu():
-        UserInterface.set_console_title('CRT v1.0 - Menú Principal')
+        UserInterface.set_console_title(f'CRT v{LASTVERSION} - Menú Principal')
         while True:
             clear_screen()
             terminal_width = os.get_terminal_size().columns
@@ -99,6 +102,7 @@ class UserInterface:
                 default="validar",
                 pointer="   >",  # Tres espacios antes del '>' para separarlo del borde
                 qmark='',
+                style=style
             ).execute_async()
 
             if choice == "validar":
@@ -175,7 +179,8 @@ class UserInterface:
                 ],
                 default="oficina",
                 pointer=">",
-                qmark=''
+                qmark='',
+                style=style
             ).execute_async()
 
             if choice == "volver":
