@@ -12,3 +12,4 @@ cryptography
 aiohttp
 requests
 python-dateutil
+nest_asyncio

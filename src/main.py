@@ -1,6 +1,8 @@
 import os
 import sys
 import asyncio
+import nest_asyncio
+nest_asyncio.apply()
 import requests
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
@@ -44,11 +46,8 @@ def check_for_updates():
 
 async def main():
     maximize_console()
-    clear_screen()
-    print(ASCII_ART)
-    
+    clear_screen()    
     check_for_updates()
-    
     await UserInterface.run()
     clear_screen()
 
