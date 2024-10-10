@@ -199,7 +199,7 @@ class WindaValidator:
                 "País": result.get('Country', 'N/A'),
                 "Título del curso": result.get('CourseTitle', 'N/A'),
                 "Proveedor del curso": result.get('TrainingProviderName', 'N/A'),
-                "Validez": f"{result.get('ValidFrom', 'N/A')} --- {result.get('ValidTo', 'N/A')}",
+                "Validez": f"{result.get('ValidFrom', 'N/A')} - {result.get('ValidTo', 'N/A')}",
                 "ValidTo": result.get('ValidTo', 'N/A')
             }
             for result in json_data['data']

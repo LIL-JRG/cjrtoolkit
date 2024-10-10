@@ -53,7 +53,7 @@ def check_for_updates():
         print(f"No se pudo descargar la nueva versión, : {e}")
 
 async def main():
-    UserInterface.set_console_title(f'CRT v{LASTVERSION} - Checking updates...')
+    UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Checking updates...')
     maximize_console()
     clear_screen()
     terminal_width = os.get_terminal_size().columns

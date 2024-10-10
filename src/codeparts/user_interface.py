@@ -4,6 +4,7 @@ from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from InquirerPy.separator import Separator
 from InquirerPy import get_style
+from InquirerPy.validator import EmptyInputValidator
 from tabulate import tabulate
 from datetime import datetime
 from codeparts.winda_validator import WindaValidator
@@ -65,18 +66,17 @@ def color_gradient(text, start_color, end_color, mid_colors):
 class UserInterface:
     @staticmethod
     def set_console_title(title: str):
-        if os.name == 'nt':  # Solo para Windows
+        if os.name == 'nt':
             import ctypes
             ctypes.windll.kernel32.SetConsoleTitleW(title)
 
     @staticmethod
     async def main_menu():
-        UserInterface.set_console_title(f'CRT v{LASTVERSION} - Menú Principal')
+        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
         while True:
             clear_screen()
             terminal_width = os.get_terminal_size().columns
             centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-            #colored_ascii_art = color_gradient(centered_ascii_art, '#0000FF', '#00FF00', ['#FF0000', '#FFD700'])
             colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
             print(colored_ascii_art)
             
@@ -100,7 +100,7 @@ class UserInterface:
                 message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione una opción:",
                 choices=choices,
                 default="validar",
-                pointer="   >",  # Tres espacios antes del '>' para separarlo del borde
+                pointer="   >",
                 qmark='',
                 style=style
             ).execute_async()
@@ -120,22 +120,27 @@ class UserInterface:
 
     @staticmethod
     async def validate_winda_id():
-        UserInterface.set_console_title('CRT v1.0 - Winda ID token validator')
+        UserInterface.set_console_title('CJR Toolkit v{LASTVERSION} - Winda ID token validator')
         while True:
             clear_screen()
+            terminal_width = os.get_terminal_size().columns
+            centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+            colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+            print(colored_ascii_art)
             winda_id = await inquirer.text(
-                message="Ingrese el Winda ID (o 'q' para volver al menú principal):"
+                message="Ingrese el Winda ID (o 'q' para volver al menú principal):",
+                qmark="   >",
+                validate=EmptyInputValidator("Este campo no puede estar vacío.")
             ).execute_async()
             
             if winda_id.lower() == 'q':
                 break
 
-            print(f"Buscando datos para el ID de Winda: {winda_id}")
+            print("\n")
             
             data = await WindaValidator.fetch_winda_data(winda_id)
             if data:
                 clear_screen()
-                print("Datos recuperados exitosamente:")
                 formatted_data = []
                 for entry in data:
                     valid_to = entry.get('ValidTo', 'N/A')
@@ -159,26 +164,37 @@ class UserInterface:
                         "Estatus": status
                     }
                     formatted_data.append(formatted_entry)
-                print(tabulate(formatted_data, headers="keys", tablefmt="grid"))
+                terminal_width = os.get_terminal_size().columns
+                centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+                colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+                print(colored_ascii_art)
+                print("\n    Datos recuperados exitosamente:\n")
+                print(center_text(tabulate(formatted_data, headers="keys", tablefmt="grid") + "\n ", terminal_width))
             else:
-                print("No se pudieron recuperar los datos. Por favor, intente nuevamente.")
+                print("\n     No se pudieron recuperar los datos. Por favor, intente nuevamente.\n")
 
-            await inquirer.text(message="Presione Enter para continuar...").execute_async()
+            await inquirer.text(message="Presione Enter para continuar...", qmark='   >').execute_async()
 
     @staticmethod
     async def process_cvs_menu():
-        UserInterface.set_console_title('CRT v1.0 - CV Sorter')
+        UserInterface.set_console_title('CJR Toolkit v{LASTVERSION} - - CV Sorter')
         while True:
             clear_screen()
+            terminal_width = os.get_terminal_size().columns
+            centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+            colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+            print(colored_ascii_art)
             choice = await inquirer.select(
-                message="Seleccione el tipo de personal: ",
+                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
                 choices=[
+                    Separator(),
                     Choice("oficina", "Oficina"),
                     Choice("campo", "Campo"),
-                    Choice("volver", "Volver al menú principal")
+                    Separator(),
+                    Choice("volver", "Volver")
                 ],
                 default="oficina",
-                pointer=">",
+                pointer="   >",
                 qmark='',
                 style=style
             ).execute_async()
@@ -197,10 +213,14 @@ class UserInterface:
 
     @staticmethod
     async def doc_utilities():
-        UserInterface.set_console_title('CRT v1.0 - DOC Utilities')
+        UserInterface.set_console_title('CJR Toolkit v{LASTVERSION} - DOC Utilities')
         clear_screen()
-        print("Funcionalidad DOC Utilities aún no implementada.")
-        await inquirer.text(message="Presione Enter para volver al menú principal...").execute_async()
+        terminal_width = os.get_terminal_size().columns
+        centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+        colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+        print(colored_ascii_art)
+        print("\n   Funcionalidad DOC Utilities aún no implementada.\n")
+        await inquirer.text(message="Presione Enter para volver al menú principal...", qmark="   >").execute_async()
 
     @staticmethod
     async def run():
