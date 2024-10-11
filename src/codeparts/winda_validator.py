@@ -165,7 +165,6 @@ class WindaValidator:
         cookies = cls.load_cookies()
         if not cookies:
             logging.info("No se encontraron cookies válidas. Iniciando proceso de inicio de sesión.")
-            #cookies = await cls.login_and_save_cookies()
             cookies = cls.login_and_save_cookies()
             if not cookies:
                 logging.error("No se pudieron obtener las cookies. Saliendo.")
@@ -175,7 +174,6 @@ class WindaValidator:
             json_data = response.json()
         except requests.exceptions.JSONDecodeError:
             logging.info("Error al decodificar JSON. Las cookies pueden haber expirado. Iniciando proceso de inicio de sesión.")
-            #cookies = await cls.login_and_save_cookies()
             cookies = cls.login_and_save_cookies()
             if not cookies:
                 logging.error("No se pudieron obtener nuevas cookies. Saliendo.")

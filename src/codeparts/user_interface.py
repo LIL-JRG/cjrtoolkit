@@ -172,6 +172,11 @@ class UserInterface:
                 print("\n    Datos recuperados exitosamente:\n")
                 print(center_text(tabulate(formatted_data, headers="keys", tablefmt="grid") + "\n ", terminal_width))
             else:
+                clear_screen()
+                terminal_width = os.get_terminal_size().columns
+                centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+                colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+                print(colored_ascii_art)
                 print("\n     No se pudieron recuperar los datos. Por favor, intente nuevamente.\n")
 
             await inquirer.text(message="Presione Enter para continuar...", qmark='   >').execute_async()
