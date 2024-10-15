@@ -5,6 +5,7 @@ from InquirerPy.base.control import Choice
 from InquirerPy.separator import Separator
 from InquirerPy import get_style
 from InquirerPy.validator import EmptyInputValidator
+from codeparts.get_certificate import download_certificate
 from tabulate import tabulate
 from datetime import datetime
 from codeparts.winda_validator import WindaValidator
@@ -171,6 +172,14 @@ class UserInterface:
                 print(colored_ascii_art)
                 print("\n    Datos recuperados exitosamente:\n")
                 print(center_text(tabulate(formatted_data, headers="keys", tablefmt="grid") + "\n ", terminal_width))
+                if inquirer.confirm(
+                    message=f'Te gustaría descargarla ahora?',
+                    default=True,
+                    qmark='      >',
+                    style=style
+                ).execute():
+                    cookies = WindaValidator.load_cookies()
+                    download_certificate(winda_id, cookies)
             else:
                 clear_screen()
                 terminal_width = os.get_terminal_size().columns
