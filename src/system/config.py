@@ -22,7 +22,7 @@ LOGIN_URL = "https://winda.globalwindsafety.org/account/"
 SEARCH_URL = "https://winda.globalwindsafety.org/organisation/search-bulk-result"
 MAX_RETRY_ATTEMPTS = 3
 CACHE_EXPIRATION_TIME = 3600  # 1 hora
-RESULT_FOLDER = os.path.join(BASE_DIR, 'Resultados')
+RESULT_FOLDER = os.path.join('../results')
 
 # Logging configuration
 import logging

@@ -14,17 +14,14 @@ from system.config import ASCII_ART, LASTVERSION
 from termcolor import colored
 import colorama
 
-style = get_style({"questionmark": "#ff8400", "answer": "#ffffff", "pointer": "#ff8400"}, style_override=False)
-
 colorama.init()
+style = get_style({"questionmark": "#ff8400", "answer": "#ffffff", "pointer": "#ff8400"}, style_override=False)
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def center_text(text, width):
-    lines = text.split('\n')
-    centered_lines = [line.center(width) for line in lines]
-    return '\n'.join(centered_lines)
+    return '\n'.join(line.center(width) for line in text.split('\n'))
 
 def hex_to_rgb(hex_color):
     return tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))
@@ -220,7 +217,7 @@ class UserInterface:
 
             print(f"Procesando CVs para {choice}...")
             try:
-                await CVProcessor.process_cv('Curriculums', choice.capitalize())
+                await CVProcessor.process_cv('../Curriculums', choice.capitalize())
                 print("Procesamiento completado.")
             except Exception as e:
                 print(f"Error durante el procesamiento: {str(e)}")

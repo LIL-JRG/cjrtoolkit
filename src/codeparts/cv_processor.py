@@ -13,12 +13,14 @@ class CVProcessor:
     @staticmethod
     def extract_name(text: str) -> str:
         name_pattern = r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)(?: [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\b| [A-ZÁÉÍÓÚÑ]\.| [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?)\b"
+        #name_pattern = r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?(?: [A-ZÁÉÍÓÚÑ]\.)?|[A-ZÁÉÍÓÚÑ]+(?: [A-ZÁÉÍÓÚÑ]+)?)(?: [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?: [A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?(?: [A-ZÁÉÍÓÚÑ]\.)?)?\b"
         match = re.search(name_pattern, text)
         return match.group() if match else "Nombre no encontrado"
     
     @staticmethod
     def extract_phone(text: str) -> str:
         phone_pattern = r'\b(?:\+52|52)?[ -]?(?:1|01)?[ -]?(?:\d{3}[ -]?\d{3}[ -]?\d{4}|\d{2}[ -]?\d{4}[ -]?\d{4})\b'
+        #phone_pattern = r'\b(?:\+52|52)?[ -]?(?:1|01)?[ -]?(?:\(?\d{3}\)?[ -]?\d{3}[ -]?\d{4}|\d{2}[ -]?\d{4}[ -]?\d{4})\b'
         match = re.search(phone_pattern, text)
         if match:
             phone = re.sub(r'\D', '', match.group())
@@ -30,7 +32,8 @@ class CVProcessor:
     
     @staticmethod
     def extract_email(text: str) -> str:
-        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        #email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b' #aprovao'
         match = re.search(email_pattern, text)
         return match.group() if match else "Correo no encontrado"
     
@@ -88,13 +91,13 @@ class CVProcessor:
     
         nombre_completo = nombre.replace(' ', '_')
     
-        candidate_folder = os.path.join(resultado_folder, nombre_completo)
+        candidate_folder = os.path.join(resultado_folder, nombre)
         os.makedirs(candidate_folder, exist_ok=True)
     
         new_filepath = os.path.join(candidate_folder, filename)
-        await asyncio.to_thread(shutil.copy2, os.path.join('Curriculums', filename), new_filepath)
+        await asyncio.to_thread(shutil.copy2, os.path.join('../Curriculums', filename), new_filepath)
     
-        whatsapp_link = f"https://api.whatsapp.com/send/?phone={telefono}&text=Hola {nombre_completo}, hemos recibido tu CV&type=phone_number&app_absent=0" if telefono != "Teléfono no encontrado" else "No disponible"
+        whatsapp_link = f"https://api.whatsapp.com/send/?phone={telefono}&text=Hola {nombre}, hemos recibido tu CV&type=phone_number&app_absent=0" if telefono != "Teléfono no encontrado" else "No disponible"
     
         txt_filename = f"{tipo_personal}_Candidato_{nombre_completo}.txt"
         with open(os.path.join(candidate_folder, txt_filename), 'w') as f:

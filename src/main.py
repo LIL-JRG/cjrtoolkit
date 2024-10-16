@@ -2,32 +2,24 @@ import os
 import sys
 import asyncio
 import nest_asyncio
-nest_asyncio.apply()
 import requests
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from InquirerPy import get_style
 from system.config import ASCII_ART, LASTVERSION
-from codeparts.user_interface import center_text, color_gradient
+from codeparts.user_interface import UserInterface, clear_screen, center_text, color_gradient
+
+nest_asyncio.apply()
 
 style = get_style({"questionmark": "#ff8400", "answer": "#ffffff", "pointer": "#ff8400"}, style_override=False)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(current_dir)
-sys.path.append(os.path.join(current_dir, 'codeparts'))
-sys.path.append(os.path.join(current_dir, 'system'))
-
-from codeparts.user_interface import UserInterface
-from system.config import ASCII_ART
+sys.path.extend([current_dir, os.path.join(current_dir, 'codeparts'), os.path.join(current_dir, 'system')])
 
 def maximize_console():
     if sys.platform == "win32":
         import ctypes
-        user32 = ctypes.windll.user32
-        user32.ShowWindow(user32.GetForegroundWindow(), 3)
-
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
+        ctypes.windll.user32.ShowWindow(ctypes.windll.user32.GetForegroundWindow(), 3)
 
 def check_for_updates():
     try:
@@ -38,28 +30,24 @@ def check_for_updates():
         latest_version = response.json()[0]['tag_name']
         
         if latest_version != current_version:
-            print(f"   La nueva versión {latest_version} ya está disponible!")
-            if inquirer.confirm(
-                message=f'Te gustaría descargarla ahora?',
-                default=True,
-                qmark='      >',
-                style=style
-            ).execute():
-                parent_path = os.path.abspath(os.path.join(current_dir, os.pardir))
-                os.chdir(parent_path)
-                os.system(f'{parent_path}/updater.bat')
+            if inquirer.confirm(message=f'Nueva versión {latest_version} disponible. ¿Descargar ahora?', default=True, qmark='      >', style=style).execute():
+                os.chdir(os.path.abspath(os.path.join(current_dir, os.pardir)))
+                os.system('updater.bat')
                 sys.exit(0)
-    except Exception as e:
-        print(f"No se pudo descargar la nueva versión, : {e}")
+    except requests.RequestException as e:
+        print(f"No se pudo verificar actualizaciones: {e}")
+
+async def display_ascii_art():
+    terminal_width = os.get_terminal_size().columns
+    centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+    colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+    print(colored_ascii_art)
 
 async def main():
     UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Checking updates...')
     maximize_console()
     clear_screen()
-    terminal_width = os.get_terminal_size().columns
-    centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-    colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-    print(colored_ascii_art)    
+    await display_ascii_art()
     check_for_updates()
     await UserInterface.run()
     clear_screen()
