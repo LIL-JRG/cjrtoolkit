@@ -111,6 +111,7 @@ class UserInterface:
                 await UserInterface.doc_utilities()
             elif choice == "salir":
                 clear_screen()
+                print("\n   Gracias por usar CJR Toolkit. ¡Hasta luego!")
                 break
             else:
                 print(f"La opción {choice} aún no está implementada.")
@@ -196,7 +197,8 @@ class UserInterface:
             centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
             colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
             print(colored_ascii_art)
-            choice = await inquirer.select(
+            
+            tipo_personal = await inquirer.select(
                 message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
                 choices=[
                     Separator(),
@@ -211,14 +213,74 @@ class UserInterface:
                 style=style
             ).execute_async()
 
-            if choice == "volver":
+            if tipo_personal == "volver":
                 UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
                 break
 
-            print(f"Procesando CVs para {choice}...")
+            puestos = []
+
+            if tipo_personal == "oficina":
+                puestos = [
+                    Separator("=== Puestos de Oficina ==="),
+                    Choice("recepcionista", "Recepcionista"),
+                    Choice("administrador", "Administrador"),
+                    Choice("gerente", "Gerente"),
+                    Choice("supervisor", "Supervisor"),
+                    Choice("contador", "Contador"),
+                    Separator("=== Puestos Auxiliares ==="),
+                    Choice("auxiliar_recepcionista", "Auxiliar de Recepcionista"),
+                    Choice("auxiliar_administrador", "Auxiliar de Administrador"),
+                    Choice("auxiliar_gerente", "Auxiliar de Gerente"),
+                    Choice("auxiliar_supervisor", "Auxiliar de Supervisor"),
+                    Choice("auxiliar_contador", "Auxiliar de Contador"),
+                ]
+            else:  # campo
+                puestos = [
+                    Separator("=== Puestos Técnicos ==="),
+                    Choice("ingeniero_energia_renovable", "Ingeniero de Energía Renovable"),
+                    Choice("tecnico_instalacion", "Técnico de Instalación"),
+                    Choice("tecnico_mantenimiento", "Técnico de Mantenimiento"),
+                    Separator("=== Puestos de Gestión ==="),
+                    Choice("gerente_proyectos", "Gerente de Proyectos de Energía Renovable"),
+                    Choice("gerente_desarrollo_negocios", "Gerente de Desarrollo de Negocios de Energías Renovables"),
+                    Choice("gerente_operaciones", "Gerente de Operaciones de Energías Renovables"),
+                    Separator("=== Puestos de Investigación ==="),
+                    Choice("investigador_energia_solar", "Investigador en Energía Solar"),
+                    Choice("ingeniero_biomasa", "Ingeniero de Biomasa"),
+                    Choice("ingeniero_almacenamiento_energia", "Ingeniero en Almacenamiento de Energía"),
+                ]
+
+            puestos.extend([
+                Separator(),
+                Choice("volver", "Volver")
+            ])
+            
+            puesto = await inquirer.select(
+                message="\n   Seleccione el puesto específico: ",
+                choices=puestos,
+                pointer="   >",
+                qmark='',
+                style=style
+            ).execute_async()
+
+            if puesto == "volver":
+                continue
+
+            print(f"Procesando CVs para {tipo_personal} - {puesto}...")
             try:
-                await CVProcessor.process_cv('../Curriculums', choice.capitalize())
-                print("Procesamiento completado.")
+                resultados = await CVProcessor.process_cv('../Curriculums', tipo_personal, puesto)
+                if resultados['top_candidatos']:
+                    print("\nTop 3 Candidatos:")
+                    for i, candidato in enumerate(resultados['top_candidatos'], 1):
+                        print(f"\n{i}. {candidato['nombre']}")
+                        print(f"   Teléfono: {candidato['telefono']}")
+                        print(f"   Correo: {candidato['correo']}")
+                        print(f"   Puntuación: {candidato['puntuacion']:.2f}")
+                else:
+                    print("\nNo se encontraron candidatos que cumplan con los requisitos mínimos.")
+                    print("Se recomienda publicar la vacante en redes sociales para atraer más candidatos calificados.")
+                
+                print("\nProcesamiento completado.")
             except Exception as e:
                 print(f"Error durante el procesamiento: {str(e)}")
             
@@ -239,3 +301,6 @@ class UserInterface:
     @staticmethod
     async def run():
         await UserInterface.main_menu()
+
+if __name__ == "__main__":
+    asyncio.run(UserInterface.run())
