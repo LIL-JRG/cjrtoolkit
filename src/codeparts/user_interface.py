@@ -10,6 +10,7 @@ from tabulate import tabulate
 from datetime import datetime
 from codeparts.winda_validator import WindaValidator
 from codeparts.cv_processor import CVProcessor
+from codeparts.pdf_converter import PDFConverter
 from system.config import ASCII_ART, LASTVERSION
 from termcolor import colored
 import colorama
@@ -83,7 +84,7 @@ class UserInterface:
                 Choice("validar", "Validar Winda ID"),
                 Choice("procesar", "Procesar CVs"),
                 Choice("doc", "DOC Utilities"),
-                Choice("opcion4", "Opción 4"),
+                Choice("convert", "PDF Converter"),
                 Choice("opcion5", "Opción 5"),
                 Choice("opcion6", "Opción 6"),
                 Choice("opcion7", "Opción 7"),
@@ -109,6 +110,8 @@ class UserInterface:
                 await UserInterface.process_cvs_menu()
             elif choice == "doc":
                 await UserInterface.doc_utilities()
+            elif choice =="convert":
+                await UserInterface.convert_file()
             elif choice == "salir":
                 clear_screen()
                 print("\n   Gracias por usar CJR Toolkit. ¡Hasta luego!")
@@ -116,6 +119,60 @@ class UserInterface:
             else:
                 print(f"La opción {choice} aún no está implementada.")
                 await asyncio.sleep(2)
+
+    @staticmethod
+    async def convert_file():
+        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - File converter')
+        while True:
+            clear_screen()
+            terminal_width = os.get_terminal_size().columns
+            centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+            colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+            print(colored_ascii_art)
+            choice = await inquirer.select(
+                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
+                choices=[
+                    Separator(),
+                    Choice("ptoword", "PDF --> Word"),
+                    Choice("ptoexcel", "PDF --> Excel"),
+                    Choice("ptopp", "PDF --> PowerPoint"),
+                    Choice("extimg", "Extraer imágenes de PDF"),
+                    Choice("alltopdf", "Word, Excel o PowerPoint --> PDF"),
+                    Separator(),
+                    Choice("volver", "Volver")
+                ],
+                default="oficina",
+                pointer="   >",
+                qmark='',
+                style=style
+            ).execute_async()
+        
+            
+            if choice == "volver":
+                clear_screen()
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
+            break
+
+        file_path = PDFConverter.select_file()
+        if not file_path:
+            print("No se seleccionó ningún archivo.")
+
+        result = ""
+        if choice == "ptoword" and file_path.lower().endswith('.pdf'):
+            result = await PDFConverter.pdf_to_word(file_path)
+        elif choice == "ptoexcel" and file_path.lower().endswith('.pdf'):
+            result = await PDFConverter.pdf_to_excel(file_path)
+        elif choice == "ptopp" and file_path.lower().endswith('.pdf'):
+            result = await PDFConverter.pdf_to_powerpoint(file_path)
+        elif choice == "extimg" and file_path.lower().endswith('.pdf'):
+            result = await PDFConverter.extract_images_from_pdf(file_path)
+        elif choice == "alltopdf" and file_path.lower().endswith(('.docx', '.xlsx', '.pptx')):
+            result = await PDFConverter.office_to_pdf(file_path)
+        else:
+            result = "Formato de archivo no soportado o incompatible con la opción seleccionada."
+
+        print(result)  # This line will display the return message
+        await inquirer.text(message="Presione Enter para continuar...").execute_async()
 
     @staticmethod
     async def validate_winda_id():

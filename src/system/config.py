@@ -40,6 +40,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # ASCII Art
 ASCII_ART: str = f"""
+
                      ██████╗     ██╗██████╗                    
                     ██╔════╝     ██║██╔══██╗                   
                     ██║          ██║██████╔╝                   
