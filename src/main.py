@@ -1,4 +1,13 @@
 import os
+import logging
+import comtypes.gen
+
+# Configurar logging solo para comtypes
+comtypes_logger = logging.getLogger('comtypes')
+comtypes_logger.setLevel(logging.WARNING)
+
+# Configurar logging para el resto de tu aplicación (si es necesario)
+logging.basicConfig(level=logging.INFO)
 import sys
 import asyncio
 import nest_asyncio
@@ -8,6 +17,7 @@ from InquirerPy.base.control import Choice
 from InquirerPy import get_style
 from system.config import ASCII_ART, LASTVERSION
 from codeparts.user_interface import UserInterface, clear_screen, center_text, color_gradient
+
 
 nest_asyncio.apply()
 

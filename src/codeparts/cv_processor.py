@@ -1,5 +1,3 @@
-# cv_processor.py
-
 import os
 import re
 import logging
@@ -28,6 +26,7 @@ def log_method(func):
     return wrapper
 
 class CVProcessor:
+
     @staticmethod
     def extract_name(text: str) -> str:
         name_pattern = r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b"

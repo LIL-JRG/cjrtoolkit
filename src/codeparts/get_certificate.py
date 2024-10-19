@@ -1,8 +1,8 @@
+import os
 import requests
-from system.config import COOKIE_ENCRYPTION_KEY, COOKIES_FILE, LOGIN_URL, SEARCH_URL
+from system.config import RESULT_FOLDER
 
-# Función para descargar el certificado usando el winda_id y el nombre del participante
-def download_certificate(winda_id, cookies):
+def download_certificate(winda_id, cookies, person_name):
     # Encabezados para la petición HTTP
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -30,8 +30,13 @@ def download_certificate(winda_id, cookies):
         )
         response.raise_for_status()  # Asegura que no hubo errores en la petición
 
-        # Guardar el PDF en el directorio "../results/"
-        file_path = f"../results/certificate.pdf"
+        # Crear la estructura de carpetas
+        certificate_folder = os.path.join(RESULT_FOLDER, "Certificados")
+        person_folder = os.path.join(certificate_folder, person_name)
+        os.makedirs(person_folder, exist_ok=True)
+
+        # Guardar el PDF en la carpeta de la persona
+        file_path = os.path.join(person_folder, f"{winda_id}.pdf")
         with open(file_path, "wb") as binary_file:
             binary_file.write(response.content)
 

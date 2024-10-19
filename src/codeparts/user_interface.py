@@ -133,11 +133,11 @@ class UserInterface:
                 message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
                 choices=[
                     Separator(),
-                    Choice("ptoword", "PDF --> Word"),
-                    Choice("ptoexcel", "PDF --> Excel"),
-                    Choice("ptopp", "PDF --> PowerPoint"),
+                    Choice("ptoword", "PDF a Word"),
+                    Choice("ptoexcel", "PDF a Excel"),
+                    Choice("ptopp", "PDF a PowerPoint"),
                     Choice("extimg", "Extraer imágenes de PDF"),
-                    Choice("alltopdf", "Word, Excel o PowerPoint --> PDF"),
+                    Choice("alltopdf", "Word, Excel o PowerPoint a PDF"),
                     Separator(),
                     Choice("volver", "Volver")
                 ],
@@ -234,7 +234,8 @@ class UserInterface:
                     style=style
                 ).execute():
                     cookies = WindaValidator.load_cookies()
-                    download_certificate(winda_id, cookies)
+                    person_name = formatted_data[0]['Nombre completo']  # Assuming the first entry has the correct name
+                    download_certificate(winda_id, cookies, person_name)
             else:
                 clear_screen()
                 terminal_width = os.get_terminal_size().columns

@@ -9,6 +9,7 @@ nest_asyncio
 openpyxl
 pandas
 pdf2image
+pdfplumber
 pytesseract
 python-dateutil
 python-docx
@@ -16,8 +17,11 @@ python-pptx
 pywin32
 requests
 selenium
-tabula-py
 tabulate
 termcolor
-tkinter
 webdriver-manager
+pdf2docx
+camelot-py
+opencv-python
+PyMuPDF
+comtypes
