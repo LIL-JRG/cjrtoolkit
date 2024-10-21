@@ -171,7 +171,7 @@ class UserInterface:
         else:
             result = "Formato de archivo no soportado o incompatible con la opción seleccionada."
 
-        print(result)  # This line will display the return message
+        print(result)
         await inquirer.text(message="Presione Enter para continuar...").execute_async()
 
     @staticmethod
@@ -234,7 +234,7 @@ class UserInterface:
                     style=style
                 ).execute():
                     cookies = WindaValidator.load_cookies()
-                    person_name = formatted_data[0]['Nombre completo']  # Assuming the first entry has the correct name
+                    person_name = formatted_data[0]['Nombre completo']
                     download_certificate(winda_id, cookies, person_name)
             else:
                 clear_screen()

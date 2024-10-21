@@ -91,7 +91,7 @@ class CVProcessor:
         ]
     
         candidates = await asyncio.gather(*tasks)
-        candidates = [c for c in candidates if c]  # Remove None values
+        candidates = [c for c in candidates if c]
         
         if candidates:
             top_candidates = cls.select_top_candidates(candidates, tipo_personal, puesto)
@@ -190,7 +190,6 @@ class CVProcessor:
         
         sorted_candidates = sorted(candidates, key=lambda x: x['puntuacion'], reverse=True)
         
-        # Definir un umbral mínimo de puntuación (ajustado a 0.3 para que sea más intuitivo)
         umbral_minimo = 0.1
         
         top_candidates = [c for c in sorted_candidates if c['puntuacion'] >= umbral_minimo][:3]
@@ -207,13 +206,11 @@ class CVProcessor:
             candidate_folder = os.path.join(top_candidates_folder, f"{i}_{sanitized_name}")
             os.makedirs(candidate_folder, exist_ok=True)
             
-            # Copiar el archivo PDF del candidato
             shutil.copy2(
                 os.path.join(resultado_folder, sanitized_name, candidate['filename']),
                 os.path.join(candidate_folder, candidate['filename'])
             )
             
-            # Crear un archivo de texto con la información del candidato
             with open(os.path.join(candidate_folder, "info_candidato.txt"), 'w', encoding='utf-8') as f:
                 f.write(f"Nombre: {candidate['nombre']}\n")
                 f.write(f"Teléfono: {candidate['telefono']}\n")

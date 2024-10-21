@@ -22,11 +22,9 @@ import pdf2docx
 import logging
 import comtypes.gen
 
-# Configurar logging solo para comtypes
 comtypes_logger = logging.getLogger('comtypes')
 comtypes_logger.setLevel(logging.WARNING)
 
-# Configurar logging para el resto de tu aplicación (si es necesario)
 logging.basicConfig(level=logging.INFO)
 
 class PDFConverter:
@@ -58,7 +56,6 @@ class PDFConverter:
         output_folder = PDFConverter.create_output_folder(pdf_path)
         output_path = os.path.join(output_folder, f"{os.path.splitext(os.path.basename(pdf_path))[0]}.docx")
         try:
-            # Usar pdf2docx para una mejor preservación del formato
             converter = pdf2docx.Converter(pdf_path)
             converter.convert(output_path)
             converter.close()
@@ -71,7 +68,6 @@ class PDFConverter:
         output_folder = PDFConverter.create_output_folder(pdf_path)
         output_path = os.path.join(output_folder, f"{os.path.splitext(os.path.basename(pdf_path))[0]}.xlsx")
         try:
-            # Usar camelot para extraer tablas
             tables = camelot.read_pdf(pdf_path, pages='all')
         
             with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
@@ -93,31 +89,26 @@ class PDFConverter:
         
             for page_num in range(len(pdf)):
                 page = pdf[page_num]
-                slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank layout
+                slide = prs.slides.add_slide(prs.slide_layouts[6])
             
-                # Extract text
                 text = page.get_text()
                 txBox = slide.shapes.add_textbox(PptxInches(0.5), PptxInches(0.5), 
                                                  PptxInches(9), PptxInches(5))
                 tf = txBox.text_frame
                 tf.text = text
             
-                # Extract images
                 images = page.get_images(full=True)
                 for img_index, img in enumerate(images):
                     xref = img[0]
                     base_image = pdf.extract_image(xref)
                     image_bytes = base_image["image"]
                 
-                    # Save image to a temporary file
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
                         temp_file.write(image_bytes)
                         temp_file_path = temp_file.name
                 
-                    # Add image to slide
                     slide.shapes.add_picture(temp_file_path, PptxInches(1), PptxInches(3))
                 
-                    # Remove temporary file
                     os.unlink(temp_file_path)
         
             prs.save(output_path)
@@ -151,19 +142,19 @@ class PDFConverter:
             if input_path.endswith('.docx'):
                 word = win32com.client.Dispatch('Word.Application')
                 doc = word.Documents.Open(input_path)
-                doc.SaveAs(output_path, FileFormat=17)  # wdFormatPDF = 17
+                doc.SaveAs(output_path, FileFormat=17)
                 doc.Close()
                 word.Quit()
             elif input_path.endswith('.xlsx'):
                 excel = win32com.client.Dispatch('Excel.Application')
                 wb = excel.Workbooks.Open(input_path)
-                wb.ExportAsFixedFormat(0, output_path)  # xlTypePDF = 0
+                wb.ExportAsFixedFormat(0, output_path)
                 wb.Close()
                 excel.Quit()
             elif input_path.endswith('.pptx'):
                 powerpoint = win32com.client.Dispatch('Powerpoint.Application')
                 presentation = powerpoint.Presentations.Open(input_path)
-                presentation.SaveAs(output_path, 32)  # ppSaveAsPDF = 32
+                presentation.SaveAs(output_path, 32)
                 presentation.Close()
                 powerpoint.Quit()
             else:

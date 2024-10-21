@@ -2,11 +2,9 @@ import os
 import logging
 import comtypes.gen
 
-# Configurar logging solo para comtypes
 comtypes_logger = logging.getLogger('comtypes')
 comtypes_logger.setLevel(logging.WARNING)
 
-# Configurar logging para el resto de tu aplicación (si es necesario)
 logging.basicConfig(level=logging.INFO)
 import sys
 import asyncio
