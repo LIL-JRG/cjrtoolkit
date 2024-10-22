@@ -181,8 +181,29 @@ class UserInterface:
             clear_screen()
             terminal_width = os.get_terminal_size().columns
             centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-            colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+            colored_ascii_art = color_gradient(centered_ascii_art, 
+                                               '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
             print(colored_ascii_art)
+            
+            email, password = WindaValidator.load_credentials()
+            if not email or not password:
+                print("\n   Para usar el validador de Winda ID, necesitamos tus credenciales de inicio de sesión.")
+                print("   Estas se guardarán de forma segura y se usarán para refrescar las cookies automáticamente.\n")
+                email = await inquirer.text(
+                    message="Ingrese su email:",
+                    qmark="   >",
+                    validate=EmptyInputValidator("Este campo no puede estar vacío.")
+                ).execute_async()
+                password = await inquirer.secret(
+                    message="Ingrese su contraseña:",
+                    qmark="   >",
+                    validate=EmptyInputValidator("Este campo no puede estar vacío.")
+                ).execute_async()
+                WindaValidator.login_and_save_cookies(email, password)
+
+            clear_screen()
+            print(colored_ascii_art)
+            print("\n")
             winda_id = await inquirer.text(
                 message="Ingrese el Winda ID (o 'q' para volver al menú principal):",
                 qmark="   >",
