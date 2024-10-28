@@ -11,6 +11,8 @@ KEY_FILE: str = os.path.join(ASSETS_DIR, "encryption_key.key")
 COOKIES_FILE: str = os.path.join(ASSETS_DIR, "cookies.encrypted")
 RESULT_FOLDER: str = os.path.join(BASE_DIR, '..', 'results')
 
+OPENAI_API_KEY = "Your_Api_Key"
+
 def get_or_create_key() -> bytes:
     if not os.path.exists(KEY_FILE):
         key = Fernet.generate_key()
@@ -60,3 +62,4 @@ KEYWORDS_OFICINA: List[str] = [
     'recepcionista', 'Recursos humanos', 'Licenciado', 'Licenciada', 
     'Lic.', 'Asistente'
 ]
+
