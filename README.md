@@ -20,42 +20,6 @@ Please leave a ⭐  if you like it
 
 <br>
 
-<h4>
-cjrtoolkit/
-│
-├── curriculums/
-├── results/
-├── LICENSE.md
-├── readme.md
-├── requirements.txt
-├── setup.bat
-├── start.bat
-├── updater.bat
-│
-└── src/
-    ├── assets/
-    │   ├── cookies.encrypted
-    │   └── encription_key.key
-    │
-    ├── codeparts/
-    │   ├── __init__.py
-    │   ├── cv_processor.py
-    │   ├── file_manager.py
-    │   ├── get_certificate.py
-    │   ├── user_interface.py
-    │   ├── utils.py
-    │   ├── winda_validator.py
-    │   └── __pycache__/
-    │
-    ├── system/
-    │   ├── __init__.py
-    │   ├── config.py
-    │   ├── ver.txt
-    │   └── __pycache__/
-    │
-    └── main.py
-</h4>
-
 <br>
 
 <a href="https://discord.gg/A5Ca63PkeA"><img src="https://discordapp.com/api/guilds/1295824613116350537/widget.png?style=banner3"></a>
