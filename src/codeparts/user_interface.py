@@ -12,11 +12,18 @@ from codeparts.winda_validator import WindaValidator
 from codeparts.cv_processor import CVProcessor
 from codeparts.pdf_converter import PDFConverter
 from system.config import ASCII_ART, LASTVERSION
+from codeparts.email_rewriter import email_rewriter_menu
 from termcolor import colored
 import colorama
 
 colorama.init()
 style = get_style({"questionmark": "#ff8400", "answer": "#ffffff", "pointer": "#ff8400"}, style_override=False)
+
+def Ascii_logo():
+    terminal_width = os.get_terminal_size().columns
+    centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
+    colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+    print(colored_ascii_art)
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -74,23 +81,15 @@ class UserInterface:
         UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
         while True:
             clear_screen()
-            terminal_width = os.get_terminal_size().columns
-            centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-            colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-            print(colored_ascii_art)
+            Ascii_logo()
             
             choices = [
                 Separator(),
                 Choice("validar", "Validar Winda ID"),
                 Choice("procesar", "Procesar CVs"),
                 Choice("doc", "DOC Utilities"),
-                Choice("convert", "PDF Converter"),
-                Choice("opcion5", "Opción 5"),
-                Choice("opcion6", "Opción 6"),
-                Choice("opcion7", "Opción 7"),
-                Choice("opcion8", "Opción 8"),
-                Choice("opcion9", "Opción 9"),
-                Choice("opcion10", "Opción 10"),
+                Choice("email_rewriter", "Email Rewriter"),
+                Choice("opcion5", "Opción 4"),
                 Separator(),
                 Choice("salir", "Salir")
             ]
@@ -109,9 +108,9 @@ class UserInterface:
             elif choice == "procesar":
                 await UserInterface.process_cvs_menu()
             elif choice == "doc":
-                await UserInterface.doc_utilities()
-            elif choice =="convert":
                 await UserInterface.convert_file()
+            elif choice =="email_rewriter":
+                await email_rewriter_menu()
             elif choice == "salir":
                 clear_screen()
                 print("\n   Gracias por usar CJR Toolkit. ¡Hasta luego!")
@@ -125,10 +124,7 @@ class UserInterface:
         UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - File converter')
         while True:
             clear_screen()
-            terminal_width = os.get_terminal_size().columns
-            centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-            colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-            print(colored_ascii_art)
+            Ascii_logo()
             choice = await inquirer.select(
                 message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
                 choices=[
@@ -242,14 +238,11 @@ class UserInterface:
                         "Estatus": status
                     }
                     formatted_data.append(formatted_entry)
-                terminal_width = os.get_terminal_size().columns
-                centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-                colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-                print(colored_ascii_art)
+                Ascii_logo()
                 print("\n    Datos recuperados exitosamente:\n")
-                print(center_text(tabulate(formatted_data, headers="keys", tablefmt="grid") + "\n ", terminal_width))
+                print(center_text(tabulate(formatted_data, headers="keys", tablefmt="heavy_grid") + "\n ", terminal_width))
                 if inquirer.confirm(
-                    message=f'Te gustaría descargarla ahora?',
+                    message=f'Te gustaría descargar el certificado ahora?',
                     default=True,
                     qmark='      >',
                     style=style
@@ -369,10 +362,7 @@ class UserInterface:
     async def doc_utilities():
         UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - DOC Utilities')
         clear_screen()
-        terminal_width = os.get_terminal_size().columns
-        centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-        colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-        print(colored_ascii_art)
+        Ascii_logo()
         print("\n   Funcionalidad DOC Utilities aún no implementada.\n")
         await inquirer.text(message="Presione Enter para volver al menú principal...", qmark="   >").execute_async()
         UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
