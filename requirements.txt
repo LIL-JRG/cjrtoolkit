@@ -15,6 +15,7 @@ python-dateutil
 python-docx
 python-pptx
 pywin32
+openai
 requests
 selenium
 tabulate
