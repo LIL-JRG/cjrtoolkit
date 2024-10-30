@@ -1,4 +1,5 @@
 InquirerPy
+qrcode
 Pillow
 PyPDF2
 aiohttp

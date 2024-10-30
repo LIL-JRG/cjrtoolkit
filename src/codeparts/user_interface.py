@@ -1,5 +1,7 @@
 import os
 import asyncio
+import io
+import qrcode
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from InquirerPy.separator import Separator
@@ -70,6 +72,16 @@ def color_gradient(text, start_color, end_color, mid_colors):
     return '\n'.join(colored_lines)
 
 class UserInterface:
+
+    @staticmethod
+    def generate_qr_code(url):
+        qr = qrcode.QRCode()
+        qr.add_data(url)
+        f = io.StringIO()
+        qr.print_ascii(out=f)
+        f.seek(0)
+        return f.read()
+
     @staticmethod
     def set_console_title(title: str):
         if os.name == 'nt':
@@ -265,10 +277,7 @@ class UserInterface:
         UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - CV Sorter')
         while True:
             clear_screen()
-            terminal_width = os.get_terminal_size().columns
-            centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-            colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-            print(colored_ascii_art)
+            Ascii_logo()
             
             tipo_personal = await inquirer.select(
                 message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
@@ -293,13 +302,17 @@ class UserInterface:
 
             if tipo_personal == "oficina":
                 puestos = [
+                    Separator(" "),
                     Separator("=== Puestos de Oficina ==="),
+                    Separator(" "),
                     Choice("recepcionista", "Recepcionista"),
                     Choice("administrador", "Administrador"),
                     Choice("gerente", "Gerente"),
                     Choice("supervisor", "Supervisor"),
                     Choice("contador", "Contador"),
+                    Separator(" "),
                     Separator("=== Puestos Auxiliares ==="),
+                    Separator(" "),
                     Choice("auxiliar_recepcionista", "Auxiliar de Recepcionista"),
                     Choice("auxiliar_administrador", "Auxiliar de Administrador"),
                     Choice("auxiliar_gerente", "Auxiliar de Gerente"),
@@ -308,18 +321,17 @@ class UserInterface:
                 ]
             else:  # campo
                 puestos = [
+                    Separator(" "),
                     Separator("=== Puestos Técnicos ==="),
-                    Choice("ingeniero_energia_renovable", "Ingeniero de Energía Renovable"),
-                    Choice("tecnico_instalacion", "Técnico de Instalación"),
-                    Choice("tecnico_mantenimiento", "Técnico de Mantenimiento"),
+                    Separator(" "),
+                    Choice("tecnico_oym", "Técnico de Operación y Mantenimiento"),
+                    Choice("especialista_aymt", "Especialista en Alta y Meia Tensión"),
+                    Choice("tecnico_reparacion_componentes", "Técnico de Reparación de componentes"),
+                    Separator(" "),
                     Separator("=== Puestos de Gestión ==="),
-                    Choice("gerente_proyectos", "Gerente de Proyectos de Energía Renovable"),
-                    Choice("gerente_desarrollo_negocios", "Gerente de Desarrollo de Negocios de Energías Renovables"),
-                    Choice("gerente_operaciones", "Gerente de Operaciones de Energías Renovables"),
-                    Separator("=== Puestos de Investigación ==="),
-                    Choice("investigador_energia_solar", "Investigador en Energía Solar"),
-                    Choice("ingeniero_biomasa", "Ingeniero de Biomasa"),
-                    Choice("ingeniero_almacenamiento_energia", "Ingeniero en Almacenamiento de Energía"),
+                    Separator(" "),
+                    Choice("especialista_palas", "Técnico de Reparación de palas"),
+                    Choice("ingeniero_grandes_correctivos", "Técnico de grandes correctivos")
                 ]
 
             puestos.extend([
@@ -347,7 +359,24 @@ class UserInterface:
                         print(f"\n{i}. {candidato['nombre']}")
                         print(f"   Teléfono: {candidato['telefono']}")
                         print(f"   Correo: {candidato['correo']}")
-                        print(f"   Puntuación: {candidato['puntuacion']:.2f}")
+                        print(f"   Puntuación: {candidato['puntuacion']*100:.2f}")
+                        
+                        if candidato['telefono'] != "Teléfono no encontrado":
+                            
+                            clean_phone = ''.join(filter(str.isdigit, candidato['telefono']))
+                            if not clean_phone.startswith('52'):
+                                clean_phone = '52' + clean_phone
+                            whatsapp_link = f"https://wa.me/{clean_phone}"
+                        else:
+                            whatsapp_link = "No disponible"
+                        
+                        
+                        if whatsapp_link != "No disponible":
+                            qr_code = UserInterface.generate_qr_code(whatsapp_link)
+                            print(f"\n   QR Code para WhatsApp de {candidato['nombre']}:")
+                            print(qr_code)
+                        else:
+                            print(f"\n   QR Code no disponible para {candidato['nombre']} (número de teléfono no encontrado)")
                 else:
                     print("\nNo se encontraron candidatos que cumplan con los requisitos mínimos.")
                     print("Se recomienda publicar la vacante en redes sociales para atraer más candidatos calificados.")
