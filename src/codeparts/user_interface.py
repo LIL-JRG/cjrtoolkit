@@ -19,12 +19,14 @@ from termcolor import colored
 import colorama
 
 colorama.init()
-style = get_style({"questionmark": "#ff8400", "answer": "#ffffff", "pointer": "#ff8400"}, style_override=False)
+style = get_style({"questionmark": "#5eff00", "answer": "#ffffff", "pointer": "#5eff00"}, style_override=True)
+
+terminal_width = os.get_terminal_size().columns
 
 def Ascii_logo():
     terminal_width = os.get_terminal_size().columns
     centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-    colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
+    colored_ascii_art = color_gradient(centered_ascii_art, '#ffffff', '#ff9100', ['#ff0000', '#5eff00'])
     print(colored_ascii_art)
 
 def clear_screen():
@@ -187,11 +189,7 @@ class UserInterface:
         UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Winda ID token validator')
         while True:
             clear_screen()
-            terminal_width = os.get_terminal_size().columns
-            centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-            colored_ascii_art = color_gradient(centered_ascii_art, 
-                                               '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-            print(colored_ascii_art)
+            Ascii_logo()
             
             email, password = WindaValidator.load_credentials()
             if not email or not password:
@@ -210,7 +208,7 @@ class UserInterface:
                 WindaValidator.login_and_save_cookies(email, password)
 
             clear_screen()
-            print(colored_ascii_art)
+            Ascii_logo()
             print("\n")
             winda_id = await inquirer.text(
                 message="Ingrese el Winda ID (o 'q' para volver al menú principal):",
@@ -264,10 +262,7 @@ class UserInterface:
                     download_certificate(winda_id, cookies, person_name)
             else:
                 clear_screen()
-                terminal_width = os.get_terminal_size().columns
-                centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-                colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-                print(colored_ascii_art)
+                Ascii_logo()
                 print("\n     No se pudieron recuperar los datos. Por favor, intente nuevamente.\n")
 
             await inquirer.text(message="Presione Enter para continuar...", qmark='   >').execute_async()
