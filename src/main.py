@@ -1,6 +1,9 @@
 import os
 import logging
 import comtypes.gen
+from dotenv import load_dotenv
+
+load_dotenv()
 
 comtypes_logger = logging.getLogger('comtypes')
 comtypes_logger.setLevel(logging.WARNING)
@@ -14,7 +17,7 @@ from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from InquirerPy import get_style
 from system.config import ASCII_ART, LASTVERSION
-from codeparts.user_interface import UserInterface, clear_screen, center_text, color_gradient
+from codeparts.user_interface import UserInterface, clear_screen, Ascii_logo
 
 
 nest_asyncio.apply()
@@ -46,10 +49,7 @@ def check_for_updates():
         print(f"No se pudo verificar actualizaciones: {e}")
 
 async def display_ascii_art():
-    terminal_width = os.get_terminal_size().columns
-    centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-    colored_ascii_art = color_gradient(centered_ascii_art, '#fff200', '#ff0000', ['#ff4000', '#ff8400'])
-    print(colored_ascii_art)
+    Ascii_logo()
 
 async def main():
     UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Checking updates...')

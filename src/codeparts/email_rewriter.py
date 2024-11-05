@@ -1,31 +1,62 @@
 import os
 import asyncio
-from openai import AsyncOpenAI
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
 from InquirerPy.separator import Separator
-from system.config import OPENAI_API_KEY
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class EmailRewriter:
     def __init__(self):
-        self.client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+        api_key = os.environ.get("GEMINI_API_KEY")
+
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY environment variable is not set")
+        
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config={
+                "temperature": 1,
+                "top_p": 0.95,
+                "top_k": 40,
+                "max_output_tokens": 8192,
+                "response_mime_type": "text/plain",                
+            }
+        )
 
     async def rewrite_email(self, original_text):
         try:
-            response = await self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "Eres un redactor de correo electrónico profesional. Tu tarea es mejorar y formalizar el texto dado, manteniendo su intención original pero mejorando su claridad, profesionalismo y eficacia."},
-                    {"role": "user", "content": f"Por favor, re escribe y mejora el siguinte texto de correo:\n\n{original_text}"}
-                ]
+            chat = self.model.start_chat(history=[
+                {
+                    "role": "user",
+                    "parts": ["Eres un redactor de correo electrónico profesional. Tu tarea es mejorar y formalizar el texto dado, manteniendo su intención original pero mejorando su claridad, profesionalismo y eficacia."]
+                },
+                {
+                    "role": "model",
+                    "parts": ["Entendido. Estoy listo para ayudarte a mejorar y formalizar textos de correos electrónicos, manteniendo su intención original mientras mejoro su claridad, profesionalismo y eficacia. ¿Cuál es el texto que deseas que reescriba?"]
+                }
+            ])
+
+            response = await asyncio.to_thread(
+                chat.send_message,
+                f"Por favor, reescribe y mejora el siguiente texto de correo:\n\n{original_text}"
             )
-            return response.choices[0].message.content.strip()
+            return response.text
         except Exception as e:
             print(f"Error al procesar el texto: {str(e)}")
             return None
 
 async def email_rewriter_menu():
-    rewriter = EmailRewriter()
+    try:
+        rewriter = EmailRewriter()
+    except ValueError as e:
+        print(f"Error: {str(e)}")
+        print("Por favor, configure la variable de entorno GEMINI_API_KEY con su clave de API de Gemini.")
+        await inquirer.text(message="Presione Enter para volver al menú principal...").execute_async()
+        return
 
     while True:
         choice = await inquirer.select(
