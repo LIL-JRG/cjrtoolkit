@@ -2,6 +2,8 @@ import os
 import re
 import logging
 import shutil
+import spacy
+from typing import List, Set
 import asyncio
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
@@ -26,17 +28,68 @@ def log_method(func):
     return wrapper
 
 class CVProcessor:
+    nlp = spacy.load("es_core_news_sm")
+
+    blocked_patterns: Set[str] = {
+        "estudio", "bilingtie", "analista", "calle", "avenida", "experiencia laboral",
+        "idioma", "inglés", "español", "francés", "alemán", "curriculum vitae", "cv",
+        "teléfono", "email", "correo", "electrónico", "dirección", "código postal",
+        "educación", "formación", "habilidades", "competencias", "referencias",
+        "cualquier", "lugar", "nivel", "oral", "escrito", "avanzado", "intermedio", "básico"
+    }
+
+    titles: Set[str] = {"lic", "licenciado", "licenciada", "ing", "ingeniero", "ingeniera", 
+                        "prof", "profesor", "profesora", "dr", "doctor", "doctora", 
+                        "mtro", "maestro", "maestra"}
+
+    common_names: Set[str] = { "juan", "pablo", "francisco", "amelia", "ocampo", "mercado", "jose", "julián", "josé", "maría", "guadalupe", "carlos", "fernando", "alejandro", "sofia", "valentina", "isabella","martínez", "gonzález", "rodríguez", "lópez", "pérez", "sánchez", "ramírez", "cruz", "hernández", "garcía", "morales", "ortega", "vázquez", "mendoza", "castillo", "jiménez", "torres", "flores", "ramos", "reyes", "gutiérrez", "chávez", "márquez", "domínguez","cervantes", "villanueva", "montes", "escalante", "quintana", "salazar", "valenzuela", "aguilar", "navarro", "padilla", "santana", "treviño", "uribe", "zavala", "ibarra", "maldonado", "pacheco", "santiago", "valdez", "zúñiga", "bautista", "carrillo", "delgado", "espinoza", "figueroa", "gallegos", "huerta", "ibáñez", "juárez", "luna", "medina", "nieto", "olivares", "pineda", "quiroz", "rosales", "sosa", "tapia", "urías", "villalobos", "xochitl", "yáñez", "zárate", "álvarez", "barrera", "camarillo", "díaz", "estrada", "fuentes", "gómez", "hidalgo", "izquierdo", "jara", "kuri", "lara", "mármol", "nava", "ojeda", "pinedo", "quintanilla", "rangel", "serrano", "téllez", "urbina", "villaseñor", "wenceslao", "xicoténcatl", "yolanda", "zapata", "ángel", "baltazar", "candelaria", "delfina", "eulalia", "feliciano", "gregorio", "heriberto", "ignacio", "jovita", "karen", "leonardo", "marcelino", "nicolás", "octavio", "patricia", "quintín", "rosario", "santos", "teodoro", "ulises", "vicente", "wilfrido", "ximena", "yadira", "zulema", "viviana", "mariano", "martín", "gael", "miguel", "vazques", "diana"}
+
+    @staticmethod
+    def is_valid_name(name: str) -> bool:
+
+        name_lower = name.lower()
+
+        if any(pattern in name_lower for pattern in CVProcessor.blocked_patterns):
+            return False
+        
+        name_parts = name.split()
+        if len(name_parts) < 2:
+            return False
+        
+        if len(name) > 50:
+            return False
+        
+        if not all(part.istitle() for part in name_parts):
+            return False
+        
+        if not any(part.lower() in CVProcessor.common_names for part in name_parts):
+            return False
+        
+        return True
+
+    @staticmethod
+    def remove_titles(name: str) -> str:
+        name_parts = name.split()
+        while name_parts and name_parts[0].lower().rstrip('.') in CVProcessor.titles:
+            name_parts.pop(0)
+        return " ".join(name_parts)
 
     @staticmethod
     def extract_name(text: str) -> str:
-        name_pattern = r"\b([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b"
-        invalid_names = ["Calle Cualquiera", "Institución Increible", "Cualquier Lugar", "Universidad Ensigna"]
+        doc = CVProcessor.nlp(text)
+        names = [CVProcessor.remove_titles(ent.text) for ent in doc.ents if ent.label_ == "PER"]
+        valid_names = [name for name in names if CVProcessor.is_valid_name(name)]
         
+        if valid_names:
+            return max(valid_names, key=len)
+        
+        name_pattern = r"\b(?:(?:Lic|Ing|Prof|Dr|Mtro)\.?\s+)?([A-ZÁÉÍÓÚÑ][a-záéíóúñ]+(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+){1,3})\b"
         matches = re.finditer(name_pattern, text)
         for match in matches:
-            name = match.group()
-            if name not in invalid_names and len(name.split()) >= 2:
+            name = match.group(1)
+            if CVProcessor.is_valid_name(name):
                 return name
+        
         return "Nombre no encontrado"
     
     @staticmethod
