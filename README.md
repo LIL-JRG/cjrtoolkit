@@ -20,9 +20,6 @@ Please leave a ⭐  if you like it
 
 <br>
 
-<br>
-
-<a href="https://discord.gg/A5Ca63PkeA"><img src="https://discordapp.com/api/guilds/1295824613116350537/widget.png?style=banner3"></a>
 
 <br>
 
