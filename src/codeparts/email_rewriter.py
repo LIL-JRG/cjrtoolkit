@@ -53,7 +53,7 @@ async def email_rewriter_menu():
         rewriter = EmailRewriter()
     except ValueError as e:
         print(f"Error: {str(e)}")
-        print("Por favor, configure la variable de entorno GEMINI_API_KEY con su clave de API de Gemini.")
+        print("Por favor, configure la variable de entorno GEMINI_API_KEY con su clave de API de Gemini.\nCree un archivo '.env' y dentro ponga GEMINI_API_KEY=Your_Api_Key")
         await inquirer.text(message="Presione Enter para volver al menú principal...").execute_async()
         return
 
