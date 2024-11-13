@@ -42,7 +42,7 @@ class EmailRewriter:
 
             response = await asyncio.to_thread(
                 chat.send_message,
-                f"Por favor, reescribe y mejora el siguiente texto de correo:\n\n{original_text}"
+                f"Por favor, reescribe, alarga y mejora el siguiente texto de correo:\n\n{original_text}"
             )
             return response.text
         except Exception as e:
