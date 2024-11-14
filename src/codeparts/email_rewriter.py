@@ -1,9 +1,13 @@
 import os
 import asyncio
 from InquirerPy import inquirer
+from InquirerPy import get_style
 from InquirerPy.base.control import Choice
 import google.generativeai as genai
 from dotenv import load_dotenv
+
+style = get_style({"questionmark": "#5eff00", "answer": "#ffffff", "pointer": "#5eff00"}, style_override=True)
+
 
 load_dotenv()
 
@@ -59,12 +63,15 @@ async def email_rewriter_menu():
 
     while True:
         choice = await inquirer.select(
-            message="Email Re-writer:",
+                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione una opción:",
             choices=[
-                Choice("rewrite", "    Reescribir un email"),
-                Choice("exit", "    Volver al menú principal")
+                Choice("rewrite", "Reescribir un email"),
+                Choice("exit", "Volver al menú principal")
             ],
-            default="rewrite"
+            default="rewrite",
+            pointer="   >",
+            qmark='',
+            style=style
         ).execute_async()
 
         if choice == "exit":
@@ -75,13 +82,13 @@ async def email_rewriter_menu():
                 multiline=True
             ).execute_async()
 
-            print("\nProcesando su email...\n")
+            print("Procesando su email...")
             improved_text = await rewriter.rewrite_email(original_text)
 
             if improved_text:
-                print("\nEmail mejorado:\n")
+                print("Email mejorado:")
                 print(improved_text)
             else:
-                print("\nNo se pudo procesar el email. Por favor, intente de nuevo.\n")
+                print("No se pudo procesar el email. Por favor, intente de nuevo.\n")
 
             await inquirer.text(message="Presione Enter para continuar...").execute_async()

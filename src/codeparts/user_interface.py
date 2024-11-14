@@ -103,7 +103,7 @@ class UserInterface:
                 Choice("procesar", "Procesar CVs"),
                 Choice("doc", "DOC Utilities"),
                 Choice("email_rewriter", "Email Rewriter"),
-                Choice("opcion5", "Opción 4"),
+                #Choice("opcion4", "Opción 4"),
                 Separator(),
                 Choice("salir", "Salir")
             ]
@@ -117,16 +117,25 @@ class UserInterface:
                 style=style
             ).execute_async()
 
+            clear_screen()
+            Ascii_logo()
+
             if choice == "validar":
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Winda ID Validator')
                 await UserInterface.validate_winda_id()
             elif choice == "procesar":
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - CV Processor')
                 await UserInterface.process_cvs_menu()
             elif choice == "doc":
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - PDF Converter')
                 await UserInterface.convert_file()
             elif choice =="email_rewriter":
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Email re-writer')
                 await email_rewriter_menu()
             elif choice == "salir":
                 clear_screen()
+                Ascii_logo()
+                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Exit')
                 print("\n   Gracias por usar CJR Toolkit. ¡Hasta luego!")
                 break
             else:
@@ -135,7 +144,6 @@ class UserInterface:
 
     @staticmethod
     async def convert_file():
-        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - File converter')
         while True:
             clear_screen()
             Ascii_logo()
@@ -186,7 +194,6 @@ class UserInterface:
 
     @staticmethod
     async def validate_winda_id():
-        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Winda ID token validator')
         while True:
             clear_screen()
             Ascii_logo()
@@ -269,7 +276,6 @@ class UserInterface:
 
     @staticmethod
     async def process_cvs_menu():
-        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - CV Sorter')
         while True:
             clear_screen()
             Ascii_logo()
@@ -384,9 +390,6 @@ class UserInterface:
 
     @staticmethod
     async def doc_utilities():
-        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - DOC Utilities')
-        clear_screen()
-        Ascii_logo()
         print("\n   Funcionalidad DOC Utilities aún no implementada.\n")
         await inquirer.text(message="Presione Enter para volver al menú principal...", qmark="   >").execute_async()
         UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
