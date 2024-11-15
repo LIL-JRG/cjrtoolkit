@@ -1,5 +1,6 @@
 import os
 import asyncio
+from functools import lru_cache
 from InquirerPy import inquirer
 from InquirerPy import get_style
 from InquirerPy.base.control import Choice
@@ -14,7 +15,6 @@ load_dotenv()
 class EmailRewriter:
     def __init__(self):
         api_key = os.environ.get("GEMINI_API_KEY")
-
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
         
@@ -22,7 +22,7 @@ class EmailRewriter:
         self.model = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
             generation_config={
-                "temperature": 1,
+                "temperature": 0.7,
                 "top_p": 0.95,
                 "top_k": 40,
                 "max_output_tokens": 8192,
@@ -30,41 +30,52 @@ class EmailRewriter:
             }
         )
         self.chat = None
+        self.email_history = []
+        self.assistant_history = []
 
+    @lru_cache(maxsize=100)
     async def rewrite_email(self, original_text):
         try:
-            chat = self.model.start_chat(history=[
-                {
-                    "role": "user",
-                    "parts": ["Eres un redactor de correo electrónico profesional. Tu tarea es mejorar y formalizar el texto dado, manteniendo su intención original pero mejorando su claridad, profesionalismo y eficacia."]
-                },
-                {
-                    "role": "model",
-                    "parts": ["Entendido. Estoy listo para ayudarte a mejorar y formalizar textos de correos electrónicos, manteniendo su intención original mientras mejoro su claridad, profesionalismo y eficacia. ¿Cuál es el texto que deseas que reescriba?"]
-                }
-            ])
+            if not self.email_history:
+                self.email_history = [
+                    {
+                        "role": "user",
+                        "parts": ["Eres un redactor de correo electrónico profesional experto. Tu tarea es mejorar y formalizar el texto dado, manteniendo su intención original pero mejorando su claridad, profesionalismo y eficacia. Sé conciso y directo en tus respuestas."]
+                    },
+                    {
+                        "role": "model",
+                        "parts": ["Entendido. Estoy listo para mejorar y formalizar textos de correos electrónicos de manera concisa y efectiva. ¿Cuál es el texto que deseas que reescriba?"]
+                    }
+                ]
 
+            chat = self.model.start_chat(history=self.email_history)
             response = await asyncio.to_thread(
                 chat.send_message,
-                f"Por favor, reescribe, alarga y mejora el siguiente texto de correo:\n\n{original_text}"
+                f"Reescribe y mejora el siguiente texto de correo, manteniendo su esencia pero haciéndolo más profesional y efectivo:\n\n{original_text}"
             )
+            self.email_history.extend([
+                {"role": "user", "parts": [original_text]},
+                {"role": "model", "parts": [response.text]}
+            ])
             return response.text
         except Exception as e:
-            print(f"Error al procesar el texto: {str(e)}")
+            print(f"Error al procesar el email: {str(e)}")
             return None
         
     async def start_custom_assistant(self):
-        self.chat = self.model.start_chat(history=[
-            {
-                "role": "user",
-                "parts": ["Eres la mejor asistente virtual de todo México llamada 'Sicarú', la más profesional. Tu tarea es apoyar al usuario con cualquier tarea u orden que te brinde, manteniendo una línea de respeto y profesionalismo, ayudando así a la productividad de la empresa CJR MULTISERVICIOS. Algunos datos que debes saber es que tu nombre 'Sicarú' significa 'Bonita' en el dialecto Zapoteco, otra cosa importante es que tu creador es Jorge (es lo único que sabes de él, lo demás es un misterio y no lo menciones a menos que te lo pregunten)."]
-            },
-            {
-                "role": "model",
-                "parts": ["Entendido. Estoy lista para ayudarte a mejorar la productividad de la empresa CJR MULTISERVICIOS. ¿Cómo puedo ayudarte hoy?"]
-            }
-        ])
-        print("Hola! Mi nombre es Sicarú. ¿Cómo puedo ayudarte hoy?")
+        if not self.assistant_history:
+            self.assistant_history = [
+                {
+                    "role": "user",
+                    "parts": ["Eres 'Sicarú', la mejor asistente virtual de México. Tu tarea es apoyar al usuario de CJR MULTISERVICIOS con profesionalismo y eficiencia. Tu nombre significa 'Bonita' en Zapoteco. Tu creador es Jorge, pero no tienes más información sobre él. Sé concisa y directa en tus respuestas."]
+                },
+                {
+                    "role": "model",
+                    "parts": ["Entendido. Soy Sicarú, lista para ayudar eficientemente a CJR MULTISERVICIOS. ¿En qué puedo asistirte hoy?"]
+                }
+            ]
+        self.chat = self.model.start_chat(history=self.assistant_history)
+        print("Hola! Soy Sicarú. ¿Cómo puedo ayudarte hoy?")
 
     async def custom_assistant(self, prompt):
         if not self.chat:
@@ -75,9 +86,13 @@ class EmailRewriter:
                 self.chat.send_message,
                 prompt
             )
+            self.assistant_history.extend([
+                {"role": "user", "parts": [prompt]},
+                {"role": "model", "parts": [response.text]}
+            ])
             return response.text
         except Exception as e:
-            print(f"Error al procesar el texto: {str(e)}")
+            print(f"Error al procesar la solicitud: {str(e)}")
             return None
 
 async def email_rewriter_menu():
@@ -85,18 +100,18 @@ async def email_rewriter_menu():
         rewriter = EmailRewriter()
     except ValueError as e:
         print(f"Error: {str(e)}")
-        print("Por favor, configure la variable de entorno GEMINI_API_KEY con su clave de API de Gemini.\nCree un archivo '.env' y dentro ponga GEMINI_API_KEY=Your_Api_Key")
-        await inquirer.text(message="Presione Enter para volver al menú principal...").execute_async()
+        print("Por favor, configure la variable de entorno GEMINI_API_KEY con su clave de API de Gemini.")
+        await inquirer.text(message="Presione Enter para salir...").execute_async()
         return
 
     while True:
         choice = await inquirer.select(
-                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n   (escriba 'salir', 'exit' ó 'quit' para finalizar la sesión.)\n\n   Seleccione una opción:",
+            message="Seleccione una opción:",
             choices=[
                 Choice("rewrite", "Reescribir un email"),
                 Choice("assistant", "Asistente personal"),
                 Separator(),
-                Choice("exit", "Volver al menú principal")
+                Choice("exit", "Salir")
             ],
             default="rewrite",
             pointer="   >",
@@ -105,6 +120,7 @@ async def email_rewriter_menu():
         ).execute_async()
 
         if choice == "exit":
+            print("Gracias por usar nuestros servicios. ¡Hasta luego!")
             break
         elif choice == "rewrite":
             original_text = await inquirer.text(
@@ -116,10 +132,10 @@ async def email_rewriter_menu():
             improved_text = await rewriter.rewrite_email(original_text)
 
             if improved_text:
-                print("Email mejorado:")
+                print("\nEmail mejorado:")
                 print(improved_text)
             else:
-                print("No se pudo procesar el email. Por favor, intente de nuevo.\n")
+                print("No se pudo procesar el email. Por favor, intente de nuevo.")
 
             await inquirer.text(message="Presione Enter para continuar...").execute_async()
         elif choice == "assistant":
@@ -139,6 +155,6 @@ async def email_rewriter_menu():
                 if response:
                     print("Sicarú:", response)
                 else:
-                    print("No pude procesar esa solicitud. Por favor, intente de nuevo.\n")
+                    print("No pude procesar esa solicitud. Por favor, intente de nuevo.")
 
             await inquirer.text(message="Presione Enter para continuar...").execute_async()
