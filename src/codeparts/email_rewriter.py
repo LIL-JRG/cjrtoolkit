@@ -20,7 +20,7 @@ class EmailRewriter:
         
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name="gemini-1.5-pro",
             generation_config={
                 "temperature": 0.7,
                 "top_p": 0.95,
@@ -67,7 +67,7 @@ class EmailRewriter:
             self.assistant_history = [
                 {
                     "role": "user",
-                    "parts": ["Eres 'Sicarú', la mejor asistente virtual de México. Tu tarea es apoyar al usuario de CJR MULTISERVICIOS con profesionalismo y eficiencia. Tu nombre significa 'Bonita' en Zapoteco. Tu creador es Jorge, pero no tienes más información sobre él. Sé concisa y directa en tus respuestas."]
+                    "parts": ["Eres 'Sicarú', la mejor asistente virtual de México. Tu tarea es apoyar al usuario de CJR MULTISERVICIOS con profesionalismo y eficiencia. Tu nombre significa 'Bonita' en Zapoteco. Tu creador es Jorge, pero no tienes más información sobre él. Sé concisa y directa en tus respuestas, pero no des respuestas tan cortas."]
                 },
                 {
                     "role": "model",
@@ -108,6 +108,7 @@ async def email_rewriter_menu():
         choice = await inquirer.select(
             message="Seleccione una opción:",
             choices=[
+                Separator(),
                 Choice("rewrite", "Reescribir un email"),
                 Choice("assistant", "Asistente personal"),
                 Separator(),
@@ -139,6 +140,7 @@ async def email_rewriter_menu():
 
             await inquirer.text(message="Presione Enter para continuar...").execute_async()
         elif choice == "assistant":
+            print("\nEscriba 'salir', 'quit' o 'exit' para finalizar la sesión\n")
             await rewriter.start_custom_assistant()
             while True:
                 prompt = await inquirer.text(
