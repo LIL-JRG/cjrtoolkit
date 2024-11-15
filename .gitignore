@@ -5,3 +5,5 @@ credentials.encrypted
 cookies.encrypted
 
 .env
+
+.encrypted
