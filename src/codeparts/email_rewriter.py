@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 style = get_style({"questionmark": "#5eff00", "answer": "#ffffff", "pointer": "#5eff00"}, style_override=True)
 
-
 load_dotenv()
 
 class EmailRewriter:
@@ -30,6 +29,7 @@ class EmailRewriter:
                 "response_mime_type": "text/plain",                
             }
         )
+        self.chat = None
 
     async def rewrite_email(self, original_text):
         try:
@@ -53,22 +53,27 @@ class EmailRewriter:
             print(f"Error al procesar el texto: {str(e)}")
             return None
         
-    async def custom_assistant(self, prompt):
-        try:
-            chat = self.model.start_chat(history=[
-                {
-                    "role": "user",
-                    "parts": ["Eres la mejor asistente virtual de todo México llamada 'Sicarú', la más profesional. Tu tarea es apoyar al usuario con cualquier tarea u orden que te brinde, manteniendo una línea de respeto y profesionalismo, ayudando así a la productividad de la empresa CJR MULTISERVICIOS. Algunos datos que debes saber es que tu nombre 'Sicarú' significa 'Bonita' en el dialecto Zapoteco, otra cosa importante es que tu creador es Jorge (es lo único que sabes de él, lo demás es un misterio y no lo menciones a menos que te lo pregunten)."]
-                },
-                {
-                    "role": "model",
-                    "parts": ["Entendido. Estoy lista para ayudarte a mejorar la productividad de la empresa CJR MULTISERVICIOS. ¿Cómo puedo ayudarte hoy?"]
-                }
-            ])
+    async def start_custom_assistant(self):
+        self.chat = self.model.start_chat(history=[
+            {
+                "role": "user",
+                "parts": ["Eres la mejor asistente virtual de todo México llamada 'Sicarú', la más profesional. Tu tarea es apoyar al usuario con cualquier tarea u orden que te brinde, manteniendo una línea de respeto y profesionalismo, ayudando así a la productividad de la empresa CJR MULTISERVICIOS. Algunos datos que debes saber es que tu nombre 'Sicarú' significa 'Bonita' en el dialecto Zapoteco, otra cosa importante es que tu creador es Jorge (es lo único que sabes de él, lo demás es un misterio y no lo menciones a menos que te lo pregunten)."]
+            },
+            {
+                "role": "model",
+                "parts": ["Entendido. Estoy lista para ayudarte a mejorar la productividad de la empresa CJR MULTISERVICIOS. ¿Cómo puedo ayudarte hoy?"]
+            }
+        ])
+        print("Hola! Mi nombre es Sicarú. ¿Cómo puedo ayudarte hoy?")
 
+    async def custom_assistant(self, prompt):
+        if not self.chat:
+            await self.start_custom_assistant()
+
+        try:
             response = await asyncio.to_thread(
-                chat.send_message,
-                f"El siguiente prompt es el del usuario al que apoyarás hoy, por favor, recuerda que eres la mejor asistente virtual de todo México, y que tu tarea es mejorar la productividad de la empresa, ahora sí, te dejo el prompt a continuación:\n\n{prompt}"
+                self.chat.send_message,
+                prompt
             )
             return response.text
         except Exception as e:
@@ -86,7 +91,7 @@ async def email_rewriter_menu():
 
     while True:
         choice = await inquirer.select(
-                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione una opción:",
+                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n   (escriba 'salir', 'exit' ó 'quit' para finalizar la sesión.)\n\n   Seleccione una opción:",
             choices=[
                 Choice("rewrite", "Reescribir un email"),
                 Choice("assistant", "Asistente personal"),
@@ -118,16 +123,22 @@ async def email_rewriter_menu():
 
             await inquirer.text(message="Presione Enter para continuar...").execute_async()
         elif choice == "assistant":
-            prompt = await inquirer.text(
-                message="Hola! Mi nombre es Sicarú, ¿Cómo puedo ayudarte hoy? ",
-            ).execute_async()
+            await rewriter.start_custom_assistant()
+            while True:
+                prompt = await inquirer.text(
+                    message="Tú: ",
+                ).execute_async()
 
-            print("Procesando su solicitud...")
-            response = await rewriter.custom_assistant(prompt)
+                if prompt.lower() in ['salir', 'exit', 'quit']:
+                    print("Gracias por usar el asistente personal. ¡Hasta luego!")
+                    break
 
-            if response:
-                print(response)
-            else:
-                print("No pude procesar esa solicitud. Por favor, intente de nuevo.\n")
+                print("Procesando su solicitud...")
+                response = await rewriter.custom_assistant(prompt)
+
+                if response:
+                    print("Sicarú:", response)
+                else:
+                    print("No pude procesar esa solicitud. Por favor, intente de nuevo.\n")
 
             await inquirer.text(message="Presione Enter para continuar...").execute_async()
