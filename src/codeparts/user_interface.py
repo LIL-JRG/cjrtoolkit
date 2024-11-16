@@ -164,33 +164,34 @@ class UserInterface:
                 qmark='',
                 style=style
             ).execute_async()
-        
-            
+    
             if choice == "volver":
                 clear_screen()
                 UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
-            break
+                return  # Salir de la función completamente
 
-        file_path = PDFConverter.select_file()
-        if not file_path:
-            print("No se seleccionó ningún archivo.")
+            file_path = PDFConverter.select_file()
+            if not file_path:
+                print("No se seleccionó ningún archivo.")
+                await inquirer.text(message="Presione Enter para continuar...").execute_async()
+                continue  # Volver al inicio del bucle
 
-        result = ""
-        if choice == "ptoword" and file_path.lower().endswith('.pdf'):
-            result = await PDFConverter.pdf_to_word(file_path)
-        elif choice == "ptoexcel" and file_path.lower().endswith('.pdf'):
-            result = await PDFConverter.pdf_to_excel(file_path)
-        elif choice == "ptopp" and file_path.lower().endswith('.pdf'):
-            result = await PDFConverter.pdf_to_powerpoint(file_path)
-        elif choice == "extimg" and file_path.lower().endswith('.pdf'):
-            result = await PDFConverter.extract_images_from_pdf(file_path)
-        elif choice == "alltopdf" and file_path.lower().endswith(('.docx', '.xlsx', '.pptx')):
-            result = await PDFConverter.office_to_pdf(file_path)
-        else:
-            result = "Formato de archivo no soportado o incompatible con la opción seleccionada."
+            result = ""
+            if choice == "ptoword" and file_path.lower().endswith('.pdf'):
+                result = await PDFConverter.pdf_to_word(file_path)
+            elif choice == "ptoexcel" and file_path.lower().endswith('.pdf'):
+                result = await PDFConverter.pdf_to_excel(file_path)
+            elif choice == "ptopp" and file_path.lower().endswith('.pdf'):
+                result = await PDFConverter.pdf_to_powerpoint(file_path)
+            elif choice == "extimg" and file_path.lower().endswith('.pdf'):
+                result = await PDFConverter.extract_images_from_pdf(file_path)
+            elif choice == "alltopdf" and file_path.lower().endswith(('.docx', '.xlsx', '.pptx')):
+                result = await PDFConverter.office_to_pdf(file_path)
+            else:
+                result = "Formato de archivo no soportado o incompatible con la opción seleccionada."
 
-        print(result)
-        await inquirer.text(message="Presione Enter para continuar...").execute_async()
+            print(result)
+            await inquirer.text(message="Presione Enter para continuar...").execute_async()
 
     @staticmethod
     async def validate_winda_id():
