@@ -14,13 +14,14 @@ import tempfile
 import camelot
 import fitz
 import pandas as pd
-from system.config import RESULT_FOLDER
+from system.config import RESULT_FOLDER, PDF_CONVERTER_CONFIG
 import win32com.client
 import pythoncom
 import comtypes.client
 import pdf2docx
 import logging
 import comtypes.gen
+from pdf2image import convert_from_path
 
 comtypes_logger = logging.getLogger('comtypes')
 comtypes_logger.setLevel(logging.WARNING)
@@ -32,12 +33,9 @@ class PDFConverter:
     def select_file():
         root = tk.Tk()
         root.withdraw()
-        file_path = filedialog.askopenfilename(filetypes=[
-            ("PDF files", "*.pdf"),
-            ("Word files", "*.docx"),
-            ("Excel files", "*.xlsx"),
-            ("PowerPoint files", "*.pptx")
-        ])
+        file_path = filedialog.askopenfilename(
+            filetypes=PDF_CONVERTER_CONFIG["supported_formats"]["input"]
+        )
         return file_path
 
     @staticmethod
@@ -68,13 +66,17 @@ class PDFConverter:
         output_folder = PDFConverter.create_output_folder(pdf_path)
         output_path = os.path.join(output_folder, f"{os.path.splitext(os.path.basename(pdf_path))[0]}.xlsx")
         try:
-            tables = camelot.read_pdf(pdf_path, pages='all')
-        
+            tables = camelot.read_pdf(
+                pdf_path,
+                flavor=PDF_CONVERTER_CONFIG["table_settings"]["flavor"],
+                line_scale=PDF_CONVERTER_CONFIG["table_settings"]["line_scale"]
+            )
+            
             with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
                 for i, table in enumerate(tables):
                     df = table.df
                     df.to_excel(writer, sheet_name=f'Table_{i+1}', index=False)
-        
+            
             return f"Conversión exitosa. Archivo guardado en: {output_path}"
         except Exception as e:
             return f"Error en la conversión a Excel: {str(e)}"
@@ -120,19 +122,24 @@ class PDFConverter:
     async def extract_images_from_pdf(pdf_path: str) -> str:
         output_folder = PDFConverter.create_output_folder(pdf_path)
         try:
-            pdf = PdfReader(pdf_path)
-            for page_num, page in enumerate(pdf.pages, 1):
-                for img_num, image in enumerate(page.images, 1):
-                    img = Image.open(io.BytesIO(image.data))
-                    if img.mode == 'PA':
-                        img = img.convert('RGB')
-                    img_filename = f"image_page{page_num}_{img_num}.png"
-                    img_path = os.path.join(output_folder, img_filename)
-                    img.save(img_path)
+            images = convert_from_path(
+                pdf_path,
+                dpi=PDF_CONVERTER_CONFIG["image_settings"]["dpi"]
+            )
+            
+            image_paths = []
+            for i, image in enumerate(images):
+                image_path = os.path.join(
+                    output_folder,
+                    f'page_{i+1}.{PDF_CONVERTER_CONFIG["image_settings"]["format"].lower()}'
+                )
+                image.save(image_path, PDF_CONVERTER_CONFIG["image_settings"]["format"])
+                image_paths.append(image_path)
+            
             return f"Extracción de imágenes exitosa. Imágenes guardadas en: {output_folder}"
         except Exception as e:
             return f"Error en la extracción de imágenes: {str(e)}"
-        
+
     @staticmethod
     async def office_to_pdf(input_path: str) -> str:
         output_folder = PDFConverter.create_output_folder(input_path)

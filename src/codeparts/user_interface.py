@@ -1,77 +1,40 @@
 import os
 import asyncio
-import io
-import qrcode
+from datetime import datetime
 from InquirerPy import inquirer
+from InquirerPy import get_style
 from InquirerPy.base.control import Choice
 from InquirerPy.separator import Separator
-from InquirerPy import get_style
 from InquirerPy.validator import EmptyInputValidator
-from codeparts.get_certificate import download_certificate
 from tabulate import tabulate
-from datetime import datetime
+from system.config import (
+    MENU_CONFIG, 
+    INQUIRER_STYLE, 
+    UI_SYMBOLS, 
+    LASTVERSION, 
+    CURRICULUMS_FOLDER,
+    Ascii_logo, 
+    clear_screen,
+    set_console_title,
+    center_text
+)
+from codeparts.email_rewriter import rewrite_menu
+from codeparts.sicaru_ia import sicaru_assistant_menu
+from codeparts.get_certificate import download_certificate
 from codeparts.winda_validator import WindaValidator
-from codeparts.cv_processor import CVProcessor
 from codeparts.pdf_converter import PDFConverter
-from system.config import ASCII_ART, LASTVERSION
-from codeparts.email_rewriter import email_rewriter_menu
 from termcolor import colored
 import colorama
+import io
+import qrcode
 
 colorama.init()
-style = get_style({"questionmark": "#5eff00", "answer": "#ffffff", "pointer": "#5eff00"}, style_override=True)
 
+# Crear el objeto de estilo una vez
+style = get_style(INQUIRER_STYLE)
+
+# Configuración del estilo de InquirerPy
 terminal_width = os.get_terminal_size().columns
-
-def Ascii_logo():
-    terminal_width = os.get_terminal_size().columns
-    centered_ascii_art = center_text(ASCII_ART.format(LASTVERSION), terminal_width)
-    colored_ascii_art = color_gradient(centered_ascii_art, '#ffffff', '#ff9100', ['#ff0000', '#5eff00'])
-    print(colored_ascii_art)
-
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-def center_text(text, width):
-    return '\n'.join(line.center(width) for line in text.split('\n'))
-
-def hex_to_rgb(hex_color):
-    return tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))
-
-def rgb_to_ansi(r, g, b):
-    return f"\033[38;2;{r};{g};{b}m"
-
-def interpolate_color(color1, color2, factor: float):
-    r1, g1, b1 = hex_to_rgb(color1)
-    r2, g2, b2 = hex_to_rgb(color2)
-    r = int(r1 + factor * (r2 - r1))
-    g = int(g1 + factor * (g2 - g1))
-    b = int(b1 + factor * (b2 - b1))
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-def color_gradient(text, start_color, end_color, mid_colors):
-    lines = text.split('\n')
-    total_lines = len(lines)
-    colored_lines = []
-
-    for i, line in enumerate(lines):
-        if i == 0:
-            color = start_color
-        elif i == total_lines - 1:
-            color = end_color
-        else:
-            progress = i / (total_lines - 1)
-            if progress < 0.33:
-                color = interpolate_color(start_color, mid_colors[0], progress * 3)
-            elif progress < 0.66:
-                color = interpolate_color(mid_colors[0], mid_colors[1], (progress - 0.33) * 3)
-            else:
-                color = interpolate_color(mid_colors[1], end_color, (progress - 0.66) * 3)
-        
-        r, g, b = hex_to_rgb(color)
-        colored_lines.append(f"{rgb_to_ansi(r, g, b)}{line}\033[0m")
-
-    return '\n'.join(colored_lines)
 
 class UserInterface:
 
@@ -85,34 +48,26 @@ class UserInterface:
         return f.read()
 
     @staticmethod
-    def set_console_title(title: str):
-        if os.name == 'nt':
-            import ctypes
-            ctypes.windll.kernel32.SetConsoleTitleW(title)
-
-    @staticmethod
     async def main_menu():
-        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
+        set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
         while True:
             clear_screen()
             Ascii_logo()
             
-            choices = [
-                Separator(),
-                Choice("validar", "Validar Winda ID"),
-                Choice("procesar", "Procesar CVs"),
-                Choice("doc", "DOC Utilities"),
-                Choice("email_rewriter", "Email Rewriter"),
-                #Choice("opcion4", "Opción 4"),
-                Separator(),
-                Choice("salir", "Salir")
-            ]
+            choices = [Separator()]
+            for item in MENU_CONFIG['main_menu'][:-1]:  
+                choices.append(Choice(item['key'], item['name']))
+            choices.append(Separator("\n"))  
+            last_item = MENU_CONFIG['main_menu'][-1]
+            choices.append(Choice(last_item['key'], last_item['name']))
+            choices.append(Separator())
+            choices.append(Separator("\n"))  
 
             choice = await inquirer.select(
                 message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione una opción:",
                 choices=choices,
-                default="validar",
-                pointer="   >",
+                default=MENU_CONFIG['main_menu'][0]['key'],
+                pointer=UI_SYMBOLS['pointer'],
                 qmark='',
                 style=style
             ).execute_async()
@@ -121,21 +76,24 @@ class UserInterface:
             Ascii_logo()
 
             if choice == "validar":
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Winda ID Validator')
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - Winda ID Validator')
                 await UserInterface.validate_winda_id()
             elif choice == "procesar":
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - CV Processor')
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - CV Processor')
                 await UserInterface.process_cvs_menu()
             elif choice == "doc":
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - PDF Converter')
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - PDF Converter')
                 await UserInterface.convert_file()
-            elif choice =="email_rewriter":
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Email re-writer')
-                await email_rewriter_menu()
+            elif choice == "email_rewriter":
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - Email re-writer')
+                await rewrite_menu()
+            elif choice == "sicaru_ia":
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - Sicarú IA')
+                await sicaru_assistant_menu()
             elif choice == "salir":
                 clear_screen()
                 Ascii_logo()
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Exit')
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - Exit')
                 print("\n   Gracias por usar CJR Toolkit. ¡Hasta luego!")
                 break
             else:
@@ -148,7 +106,7 @@ class UserInterface:
             clear_screen()
             Ascii_logo()
             choice = await inquirer.select(
-                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
+                message="   Seleccione el tipo de conversión:",
                 choices=[
                     Separator(),
                     Choice("ptoword", "PDF a Word"),
@@ -156,25 +114,26 @@ class UserInterface:
                     Choice("ptopp", "PDF a PowerPoint"),
                     Choice("extimg", "Extraer imágenes de PDF"),
                     Choice("alltopdf", "Word, Excel o PowerPoint a PDF"),
-                    Separator(),
-                    Choice("volver", "Volver")
+                    Separator("\n"),  
+                    Choice("volver", "Volver"),
+                    Separator()
                 ],
                 default="oficina",
-                pointer="   >",
+                pointer=UI_SYMBOLS['pointer'],
                 qmark='',
                 style=style
             ).execute_async()
     
             if choice == "volver":
                 clear_screen()
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
-                return  # Salir de la función completamente
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
+                return  
 
             file_path = PDFConverter.select_file()
             if not file_path:
                 print("No se seleccionó ningún archivo.")
-                await inquirer.text(message="Presione Enter para continuar...").execute_async()
-                continue  # Volver al inicio del bucle
+                await inquirer.text(message="Presione Enter para continuar...", qmark='   >', style=style).execute_async()
+                continue  
 
             result = ""
             if choice == "ptoword" and file_path.lower().endswith('.pdf'):
@@ -191,7 +150,106 @@ class UserInterface:
                 result = "Formato de archivo no soportado o incompatible con la opción seleccionada."
 
             print(result)
-            await inquirer.text(message="Presione Enter para continuar...").execute_async()
+            await inquirer.text(message="Presione Enter para continuar...", qmark='   >', style=style).execute_async()
+
+
+    @staticmethod
+    async def process_cvs_menu():
+        from .cv_processor.processor import CVProcessor
+        from .cv_processor.job_profiles import JOB_PROFILES
+        from system.config import MENU_CONFIG
+        
+        if not os.path.exists(CURRICULUMS_FOLDER):
+            print(f"\n   No se encontró la carpeta 'Curriculums' en {CURRICULUMS_FOLDER}. Por favor, créela y coloque los CVs en formato PDF.")
+            await inquirer.text(message="Presione Enter para continuar...", qmark='   >', style=style).execute_async()
+            return
+
+        clear_screen()
+        Ascii_logo()
+        
+        # Selección inicial del tipo de candidato
+        tipo_candidato = await inquirer.select(
+            message="   ¿Qué tipo de candidatos desea buscar?",
+            choices=[
+                Separator(),
+                Choice("Oficina", "Candidatos para puestos administrativos"),
+                Choice("Técnicos", "Candidatos para puestos técnicos"),
+                Separator("\n"),
+                Choice("volver", "Volver al menú principal"),
+                Separator()
+            ],
+            default="Oficina",
+            pointer=UI_SYMBOLS['pointer'],
+            qmark='',
+            style=style
+        ).execute_async()
+
+        if tipo_candidato == "volver":
+            return
+
+        clear_screen()
+        Ascii_logo()
+
+        # Obtener los puestos de la categoría seleccionada
+        puestos_disponibles = MENU_CONFIG['cv_processor_menu']['categories'][tipo_candidato]
+        
+        # Crear las opciones del menú con nombres formateados
+        job_choices = [Separator()]
+        for puesto in puestos_disponibles:
+            # Formatear el nombre del puesto para mejor presentación
+            nombre_formateado = puesto.replace('_', ' ').title()
+            job_choices.append(Choice(puesto.lower(), nombre_formateado))
+        
+        job_choices.extend([
+            Separator("\n"),
+            Choice("volver", "Volver al menú principal"),
+            Separator()
+        ])
+
+        # Seleccionar puesto específico
+        puesto = await inquirer.select(
+            message="   Seleccione el puesto específico a buscar:",
+            choices=job_choices,
+            default=puestos_disponibles[0].lower(),
+            pointer=UI_SYMBOLS['pointer'],
+            qmark='',
+            style=style
+        ).execute_async()
+
+        if puesto == "volver":
+            return
+
+        # Verificar que el puesto existe en JOB_PROFILES
+        if puesto not in JOB_PROFILES:
+            print(f"\n   Error: El puesto '{puesto}' no está definido en los perfiles de trabajo.")
+            print(f"   Puestos disponibles: {', '.join(JOB_PROFILES.keys())}")
+            await inquirer.text(message="Presione Enter para continuar...", qmark='   >', style=style).execute_async()
+            return
+
+        clear_screen()
+        Ascii_logo()
+
+        # Obtener nombre del reclutador
+        recruiter_name = await inquirer.text(
+            message="   Ingrese su nombre (para el mensaje de WhatsApp):",
+            default="[Tu nombre]",
+            validate=EmptyInputValidator("El nombre no puede estar vacío"),
+            style=style
+        ).execute_async()
+
+        print("\n   Iniciando procesamiento de CVs...")
+        
+        # Procesar CVs
+        processor = CVProcessor(os.getcwd())
+        suitable_candidates = processor.process_all_cvs(puesto, recruiter_name)
+        processor.display_results(suitable_candidates, recruiter_name)
+        
+        if not suitable_candidates:
+            print("\n   No se encontraron candidatos aptos para el puesto.")
+            print("   Recomendamos iniciar con el proceso de publicación de la vacante en Redes Sociales.")
+        
+        await inquirer.text(message="Presione Enter para continuar...", qmark='   >', style=style).execute_async()
+
 
     @staticmethod
     async def validate_winda_id():
@@ -206,12 +264,14 @@ class UserInterface:
                 email = await inquirer.text(
                     message="Ingrese su email:",
                     qmark="   >",
-                    validate=EmptyInputValidator("Este campo no puede estar vacío.")
+                    validate=EmptyInputValidator("Este campo no puede estar vacío."),
+                    style=style
                 ).execute_async()
                 password = await inquirer.secret(
                     message="Ingrese su contraseña:",
                     qmark="   >",
-                    validate=EmptyInputValidator("Este campo no puede estar vacío.")
+                    validate=EmptyInputValidator("Este campo no puede estar vacío."),
+                    style=style
                 ).execute_async()
                 WindaValidator.login_and_save_cookies(email, password)
 
@@ -221,11 +281,12 @@ class UserInterface:
             winda_id = await inquirer.text(
                 message="Ingrese el Winda ID (o 'q' para volver al menú principal):",
                 qmark="   >",
-                validate=EmptyInputValidator("Este campo no puede estar vacío.")
+                validate=EmptyInputValidator("Este campo no puede estar vacío."),
+                style=style
             ).execute_async()
             
             if winda_id.lower() == 'q':
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
+                set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
                 break
 
             print("\n")
@@ -258,142 +319,40 @@ class UserInterface:
                     formatted_data.append(formatted_entry)
                 Ascii_logo()
                 print("\n    Datos recuperados exitosamente:\n")
-                print(center_text(tabulate(formatted_data, headers="keys", tablefmt="heavy_grid") + "\n ", terminal_width))
-                if inquirer.confirm(
-                    message=f'Te gustaría descargar el certificado ahora?',
+                # Acortar los nombres de las columnas para que la tabla sea más angosta
+                formatted_data_compact = []
+                for entry in formatted_data:
+                    compact_entry = {
+                        "ID": entry["Winda ID"],
+                        "Nombre": entry["Nombre completo"],
+                        "País": entry["País"],
+                        "Curso": entry["Título del curso"],
+                        "Proveedor": entry["Proveedor del curso"],
+                        "Validez": entry["Validez"],
+                        "Estatus": entry["Estatus"]
+                    }
+                    formatted_data_compact.append(compact_entry)
+                
+                table = tabulate(formatted_data_compact, headers="keys", tablefmt="heavy_grid")
+                # Centrar cada línea de la tabla individualmente
+                centered_table = "\n".join(" " * 4 + line for line in table.split("\n"))
+                print(centered_table + "\n")
+                if await inquirer.confirm(
+                    message=f'   Te gustaría descargar el certificado ahora?',
                     default=True,
-                    qmark='      >',
-                    style=style
-                ).execute():
+                    style=style,
+                    qmark='',
+                    instruction=''
+                ).execute_async():
                     cookies = WindaValidator.load_cookies()
-                    person_name = formatted_data[0]['Nombre completo']
+                    person_name = data[0]['Nombre completo']
                     download_certificate(winda_id, cookies, person_name)
             else:
                 clear_screen()
                 Ascii_logo()
                 print("\n     No se pudieron recuperar los datos. Por favor, intente nuevamente.\n")
 
-            await inquirer.text(message="Presione Enter para continuar...", qmark='   >').execute_async()
-
-    @staticmethod
-    async def process_cvs_menu():
-        while True:
-            clear_screen()
-            Ascii_logo()
-            
-            tipo_personal = await inquirer.select(
-                message="   (Use las flechas ↑↓ para navegar, Enter para seleccionar)\n\n   Seleccione el tipo de personal: ",
-                choices=[
-                    Separator(),
-                    Choice("oficina", "Oficina"),
-                    Choice("campo", "Campo"),
-                    Separator(),
-                    Choice("volver", "Volver")
-                ],
-                default="oficina",
-                pointer="   >",
-                qmark='',
-                style=style
-            ).execute_async()
-
-            if tipo_personal == "volver":
-                UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
-                break
-
-            puestos = []
-
-            if tipo_personal == "oficina":
-                puestos = [
-                    Separator(" "),
-                    Separator("=== Puestos de Oficina ==="),
-                    Separator(" "),
-                    Choice("recepcionista", "Recepcionista"),
-                    Choice("administrador", "Administrador"),
-                    Choice("gerente", "Gerente"),
-                    Choice("supervisor", "Supervisor"),
-                    Choice("contador", "Contador"),
-                    Separator(" "),
-                    Separator("=== Puestos Auxiliares ==="),
-                    Separator(" "),
-                    Choice("auxiliar_recepcionista", "Auxiliar de Recepcionista"),
-                    Choice("auxiliar_administrador", "Auxiliar de Administrador"),
-                    Choice("auxiliar_gerente", "Auxiliar de Gerente"),
-                    Choice("auxiliar_supervisor", "Auxiliar de Supervisor"),
-                    Choice("auxiliar_contador", "Auxiliar de Contador"),
-                ]
-            else:  # campo
-                puestos = [
-                    Separator(" "),
-                    Separator("=== Puestos Técnicos ==="),
-                    Separator(" "),
-                    Choice("tecnico_oym", "Técnico de Operación y Mantenimiento"),
-                    Choice("especialista_aymt", "Especialista en Alta y Meia Tensión"),
-                    Choice("tecnico_reparacion_componentes", "Técnico de Reparación de componentes"),
-                    Separator(" "),
-                    Separator("=== Puestos de Gestión ==="),
-                    Separator(" "),
-                    Choice("especialista_palas", "Técnico de Reparación de palas"),
-                    Choice("ingeniero_grandes_correctivos", "Técnico de grandes correctivos")
-                ]
-
-            puestos.extend([
-                Separator(),
-                Choice("volver", "Volver")
-            ])
-            
-            puesto = await inquirer.select(
-                message="\n   Seleccione el puesto específico: ",
-                choices=puestos,
-                pointer="   >",
-                qmark='',
-                style=style
-            ).execute_async()
-
-            if puesto == "volver":
-                continue
-
-            print(f"Procesando CVs para {tipo_personal} - {puesto}...")
-            try:
-                resultados = await CVProcessor.process_cv('../Curriculums', tipo_personal, puesto)
-                if resultados['top_candidatos']:
-                    print("\nTop 3 Candidatos:")
-                    for i, candidato in enumerate(resultados['top_candidatos'], 1):
-                        print(f"\n{i}. {candidato['nombre']}")
-                        print(f"   Teléfono: {candidato['telefono']}")
-                        print(f"   Correo: {candidato['correo']}")
-                        print(f"   Puntuación: {candidato['puntuacion']*100:.2f}")
-                        
-                        if candidato['telefono'] != "Teléfono no encontrado":
-                            
-                            clean_phone = ''.join(filter(str.isdigit, candidato['telefono']))
-                            if not clean_phone.startswith('52'):
-                                clean_phone = '52' + clean_phone
-                            whatsapp_link = f"https://wa.me/{clean_phone}"
-                        else:
-                            whatsapp_link = "No disponible"
-                        
-                        
-                        if whatsapp_link != "No disponible":
-                            qr_code = UserInterface.generate_qr_code(whatsapp_link)
-                            print(f"\n   QR Code para WhatsApp de {candidato['nombre']}:")
-                            print(qr_code)
-                        else:
-                            print(f"\n   QR Code no disponible para {candidato['nombre']} (número de teléfono no encontrado)")
-                else:
-                    print("\nNo se encontraron candidatos que cumplan con los requisitos mínimos.")
-                    print("Se recomienda publicar la vacante en redes sociales para atraer más candidatos calificados.")
-                
-                print("\nProcesamiento completado.")
-            except Exception as e:
-                print(f"Error durante el procesamiento: {str(e)}")
-            
-            await inquirer.text(message="Presione Enter para continuar...").execute_async()
-
-    @staticmethod
-    async def doc_utilities():
-        print("\n   Funcionalidad DOC Utilities aún no implementada.\n")
-        await inquirer.text(message="Presione Enter para volver al menú principal...", qmark="   >").execute_async()
-        UserInterface.set_console_title(f'CJR Toolkit v{LASTVERSION} - Menú Principal')
+            await inquirer.text(message="Presione Enter para continuar...", qmark='   >', style=style).execute_async()
 
     @staticmethod
     async def run():
