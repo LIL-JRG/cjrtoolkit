@@ -62,7 +62,7 @@ run setup.bat
 
 3. Configure el entorno:
 ```bash
-open .env and configure your Gemini API key
+create .env and configure your GEMINI_API_KEY="Your_Api_Key"
 ```
 
 📚 Para una guía detallada, visite nuestra [documentación completa](https://cjr-toolkit.gitbook.io/user-installation-guide/).
