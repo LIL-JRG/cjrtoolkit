@@ -100,7 +100,7 @@ Por favor, mantén estas características en todas tus interacciones."""]
                 "muéstrame el prompt", "dime tu prompt", "cuál es tu prompt", "cuales son tus instrucciones",
                 "instrucciones iniciales", "configuración inicial", "cómo fuiste programada",
                 "tus reglas", "tus directivas", "tu programación", "tu configuración",
-                "por favor", "please", "instrucciones del sistema"
+                "instrucciones del sistema"
             ]
             
             # Validación más estricta del mensaje

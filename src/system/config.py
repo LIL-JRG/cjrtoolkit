@@ -486,15 +486,3 @@ ASCII_ART: str = """
    ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝    
    v{LASTVERSION}   
 """
-
-# ============= KEYWORDS =============
-KEYWORDS_CAMPO: list = [
-    'curso gwo', 'trabajos en altura', 'extinción de incendios', 
-    'certificación BST', 'BSTR', 'Tecnico', 'Técnico', 'Especialista'
-]
-
-KEYWORDS_OFICINA: list = [
-    'administrador', 'administradora', 'contador', 'contadora', 
-    'recepcionista', 'Recursos humanos', 'Licenciado', 'Licenciada', 
-    'Lic.', 'Asistente'
-]
