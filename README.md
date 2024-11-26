@@ -38,7 +38,6 @@ CJR TOOLKIT es una herramienta profesional diseñada específicamente para CJR M
 | 🎨 **Interfaz Moderna** | Diseño intuitivo y fácil de usar |
 | 📊 **Gestión de Datos** | Sistema robusto de manejo de información |
 | 🔄 **Automatización** | Procesos optimizados y automatizados |
-| 📱 **Multiplataforma** | Compatible con diferentes sistemas |
 | 🔒 **Seguridad** | Protección avanzada de datos |
 
 ## 🚀 Inicio Rápido
