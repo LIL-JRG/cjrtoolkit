@@ -46,8 +46,8 @@ for dir_path in DIRS_TO_CREATE:
 # ============= MENU CONFIGURATION =============
 MENU_CONFIG: Dict = {
     'main_menu': [
-        {'key': 'validar', 'name': 'Validar Winda ID', 'description': 'Validación de certificados Winda'},
-        {'key': 'procesar', 'name': 'Procesar CVs', 'description': 'Procesamiento de currículums'},
+        {'key': 'validar', 'name': 'Winda ID Validator', 'description': 'Validación de certificados Winda'},
+        {'key': 'procesar', 'name': 'CV Processor', 'description': 'Procesamiento de currículums'},
         {'key': 'doc', 'name': 'DOC Utilities', 'description': 'Utilidades para documentos'},
         {'key': 'email_rewriter', 'name': 'Email Rewriter', 'description': 'Reescribe correos electrónicos'},
         {'key': 'sicaru_ia', 'name': 'Sicarú IA', 'description': 'Asistente de IA'},
@@ -139,7 +139,7 @@ OPENAI_API_KEY: str = "Your_Api_Key"
 # AI Models Configuration
 AI_CONFIG: Dict = {
     "gemini": {
-        "model_name": "gemini-1.5-pro",
+        "model_name": "gemini-1.5-flash",
         "base_config": {
             "top_p": 0.95,
             "top_k": 40,

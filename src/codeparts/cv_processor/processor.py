@@ -61,11 +61,19 @@ class CVProcessor:
                 logger.error(f"Gemini no pudo analizar el CV {os.path.basename(pdf_path)}")
                 return None, 0
             
-            # Verificar que el CV tenga la información mínima necesaria
+            # Asegurar que los campos existan y tengan valores válidos
             required_fields = ['nombre', 'habilidades']
             if not all(field in cv_data for field in required_fields):
                 logger.error(f"CV incompleto: faltan campos requeridos en {os.path.basename(pdf_path)}")
                 return None, 0
+
+            # Normalizar campos que podrían ser None
+            cv_data['ubicacion'] = cv_data.get('ubicacion') or 'No especificada'
+            cv_data['telefono'] = cv_data.get('telefono') or 'No especificado'
+            cv_data['correo'] = cv_data.get('correo') or 'No especificado'
+            cv_data['idiomas'] = cv_data.get('idiomas') or []
+            cv_data['educacion'] = cv_data.get('educacion') or ['No especificada']
+            cv_data['experiencia'] = cv_data.get('experiencia') or []
             
             # Evaluar si el candidato es apto
             is_suitable, score = is_candidate_suitable(cv_data, puesto)
@@ -282,7 +290,7 @@ class CVProcessor:
 ╠═══════════════════════════════╦═══════════════════════════════════════════════════════════════╣
 ║ Contacto                      ║ Teléfono: {cv_data.get('telefono', 'No especificado'):<43} ║
 ║                               ║ Email: {cv_data.get('correo', 'No especificado'):<46} ║
-║                               ║ Ubicación: {cv_data.get('ubicacion', 'No especificada'):<42} ║
+║                               ║ Ubicación: {cv_data.get('ubicacion') or 'No especificada':<42} ║
 ║                               ║ WhatsApp: {whatsapp_link:<44} ║
 ╠═══════════════════════════════╬═══════════════════════════════════════════════════════════════╣
 ║ Educación                     ║ {('• ' + cv_data.get('educacion', ['No especificada'])[0]):<55} ║"""
