@@ -133,8 +133,7 @@ MESSAGES: Dict = {
     }
 }
 
-# ============= API KEYS AND AI CONFIGURATION =============
-OPENAI_API_KEY: str = "Your_Api_Key"
+# ============= AI CONFIGURATION =============
 
 # AI Models Configuration
 AI_CONFIG: Dict = {

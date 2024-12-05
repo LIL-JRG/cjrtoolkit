@@ -107,28 +107,48 @@ class GeminiProcessor:
             CV:
             {cv_text}
 
-            IMPORTANTE: Responde SOLO con el JSON.
+            IMPORTANTE: 
+            1. Responde SOLO con el JSON.
+            2. Asegúrate de que el JSON esté correctamente formateado con todas las comas necesarias.
+            3. Verifica que todos los corchetes y llaves estén correctamente cerrados.
             """
             
             response_text = self._generate_with_retry(prompt)
 
             # Intentar extraer el JSON de la respuesta
             try:
+                # Limpiar la respuesta antes de intentar parsear el JSON
+                json_str = response_text.strip()
+                
                 # Encontrar el primer '{' y el último '}'
-                start = response_text.find('{')
-                end = response_text.rfind('}') + 1
+                start = json_str.find('{')
+                end = json_str.rfind('}') + 1
                 
                 if start >= 0 and end > start:
-                    json_str = response_text[start:end]
-                    return json.loads(json_str)
+                    json_str = json_str[start:end]
+                    
+                    # Intentar parsear el JSON
+                    try:
+                        return json.loads(json_str)
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Error al decodificar JSON: {str(e)}")
+                        logger.error(f"JSON malformado: {json_str}")
+                        # Intento de recuperación básico: eliminar caracteres problemáticos
+                        json_str = json_str.replace('\n', ' ').replace('\r', '')
+                        try:
+                            return json.loads(json_str)
+                        except:
+                            logger.error("No se pudo recuperar el JSON incluso después de la limpieza")
+                            return {}
                 else:
-                    logger.error("No se encontró JSON en la respuesta")
+                    logger.error("No se encontró JSON válido en la respuesta")
+                    logger.error(f"Respuesta recibida: {response_text}")
                     return {}
                     
-            except json.JSONDecodeError as e:
-                logger.error(f"Error al decodificar JSON: {str(e)}")
+            except Exception as e:
+                logger.error(f"Error al procesar la respuesta: {str(e)}")
                 return {}
-                
+            
         except Exception as e:
             logger.error(f"Error al analizar CV: {str(e)}")
             return {}
