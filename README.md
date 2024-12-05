@@ -1,8 +1,8 @@
 <h1 align="center"> CJR TOOLKIT </h1>
 
-<div align="center">
+<div align="center");
 
-![CJR Toolkit Logo](https://github.com/user-attachments/assets/6f8d8814-f75d-448d-ac98-fb3572e99b14)
+![CJR Toolkit Logo](https://github.com/user-attachments/assets/b52f7a73-9128-4ed6-baba-c696434b152d)
 
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)](https://www.python.org/)
@@ -14,7 +14,7 @@
 Una solución integral para optimizar la gestión y productividad de CJR MULTISERVICIOS
 </p>
 
-<div align="center">
+<div align="center");
 
 [📖 Documentación](https://cjr-toolkit.gitbook.io/user-installation-guide/) |
 [🚀 Comenzar](https://cjr-toolkit.gitbook.io/user-installation-guide/instalacion/cjr-toolkit) |
@@ -30,15 +30,26 @@ CJR TOOLKIT es una herramienta profesional diseñada específicamente para CJR M
 - 🔄 Automatizar procesos repetitivos
 - 📊 Mejorar la gestión de datos
 - 💼 Optimizar el flujo de trabajo diario
+- 🤖 Integración con IA para tareas sencillas y avanzadas
+
+## 🛠️ Tecnologías Utilizadas
+
+- **Lenguaje**: Python 3.7+
+- **IA**: Google Gemini API
+- **Automatización**: Python Scripts
+- **Reportes**: Custom PDF Generator
+- **Seguridad**: AES Encryption
 
 ## ✨ Características Principales
 
 | Característica | Descripción |
 |----------------|-------------|
-| 🎨 **Interfaz Moderna** | Diseño intuitivo y fácil de usar |
-| 📊 **Gestión de Datos** | Sistema robusto de manejo de información |
-| 🔄 **Automatización** | Procesos optimizados y automatizados |
-| 🔒 **Seguridad** | Protección avanzada de datos |
+| 🎨 **Interfaz Moderna** | Diseño intuitivo y fácil de usar con tema oscuro |
+| 📊 **Gestión de Datos** | Sistema robusto de manejo de información con respaldos |
+| 🔄 **Automatización** | Procesos optimizados y automatizados con tecnología de IA |
+| 🔒 **Seguridad** | Protección avanzada de datos y encriptación AES |
+| 📈 **Reportes** | Generación automática de informes y análisis |
+| 🤖 **IA Integrada** | Asistente virtual para tareas sencillas y complejas |
 
 ## 🚀 Inicio Rápido
 
@@ -54,32 +65,57 @@ CJR TOOLKIT es una herramienta profesional diseñada específicamente para CJR M
 git clone https://github.com/LIL-JRG/cjrtoolkit.git
 cd cjrtoolkit
 ```
-
 2. Instale las dependencias:
 ```bash
 run setup.bat
 ```
-
 3. Configure el entorno:
 ```bash
-create .env and configure your GEMINI_API_KEY="Your_Api_Key"
+# Cree un archivo .env en la raíz del proyecto con:
+GEMINI_API_KEY="Your_Api_Key"
 ```
-
-📚 Para una guía detallada, visite nuestra [documentación completa](https://cjr-toolkit.gitbook.io/user-installation-guide/).
-
-## 🔧 Configuración
-
-El sistema puede personalizarse mediante el archivo `src/system/config.py`:
-
-```yaml
-environment: production
-debug_mode: false
-language: es
+4. Inicie la aplicación:
+```bash
+python src/main.py
 ```
+📚 Para una guía detallada, visite nuestra [documentación completa](https://cjr-toolkit.gitbook.io/).
+
+## 📋 Requisitos del Sistema
+
+### Mínimos
+- Sistema Operativo: Windows 10 o superior
+- Procesador: Intel Core i3 o equivalente
+- RAM: 4GB
+- Espacio en disco: 500MB
+- Python 3.7+
+
+### Recomendados
+- Sistema Operativo: Windows 10
+- Procesador: Intel Core i5 o superior
+- RAM: 8GB
+- Espacio en disco: 1GB
+- Python 3.7+
+
+## 🔍 Solución de Problemas
+
+### Problemas Comunes
+
+1. **Error de Conexión API**
+   - Verifique su conexión a internet
+   - Confirme que su API key es válida
+   - Revise los logs en `logs/error.log`
+
+2. **Problemas de Instalación**
+   - Ejecute `setup.bat` como administrador
+   - Verifique que Python está en PATH
+   - Consulte los requisitos mínimos del sistema
+
+
+Para más ayuda, consulte nuestra [documentación de soporte](https://cjr-toolkit.gitbook.io/user-installation-guide/ayuda/preguntas-frecuentes)
 
 ## 🤝 Contribución
 
-Este es un proyecto privado desarrollado específicamente para CJR MULTISERVICIOS. Por el momento, no se aceptan contribuciones externas.
+Este es un proyecto privado desarrollado específicamente para CJR MULTISERVICIOS. Por el momento, se aceptan contribuciones externas bajo revisión.
 
 ## 📜 Términos y Condiciones
 
